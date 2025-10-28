@@ -1,0 +1,207 @@
+# PIPELINE DEFINITION
+# Name: ray-torch-mlflow-smoke-pipeline
+# Inputs:
+#    experiment_name: str [Default: 'kubeflow-ray-smoke']
+#    mlflow_tracking_uri: str [Default: 'http://mlflow-tracking.mlflow.svc.cluster.local:5000']
+#    ray_address: str [Default: 'ray://kuberay-raycluster-head-svc.development.svc.cluster.local:10001']
+#    ray_namespace: str [Default: 'default']
+components:
+  comp-ray-torch-mlflow-smoke-test:
+    executorLabel: exec-ray-torch-mlflow-smoke-test
+    inputDefinitions:
+      parameters:
+        experiment_name:
+          defaultValue: kubeflow-ray-smoke
+          isOptional: true
+          parameterType: STRING
+        mlflow_tracking_uri:
+          parameterType: STRING
+        ray_address:
+          parameterType: STRING
+        ray_namespace:
+          defaultValue: default
+          isOptional: true
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-ray-torch-mlflow-smoke-test:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - ray_torch_mlflow_smoke_test
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'mlflow==3.1.0'\
+          \ 'pyarrow>=16.1,<21'  &&  python3 -m pip install --quiet --no-warn-script-location\
+          \ 'kfp==2.14.2' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"\
+          3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef ray_torch_mlflow_smoke_test(\n    ray_address: str,\n    mlflow_tracking_uri:\
+          \ str,\n    experiment_name: str = \"kubeflow-ray-smoke\",\n    ray_namespace:\
+          \ str = \"default\",\n) -> str:\n    import os, sys, json, socket, platform,\
+          \ tempfile, subprocess, traceback\n    from urllib.parse import urlparse\n\
+          \n    def p(msg: str) -> None:\n        print(msg, flush=True)\n\n    #\
+          \ --- DRIVER ENV ---\n    p(\"=== DRIVER ENV INFO (before Ray connect) ===\"\
+          )\n    p(f\"python: {sys.executable}\")\n    p(f\"python_version: {sys.version}\"\
+          )\n    p(f\"platform: {platform.platform()}\")\n    p(f\"ray_address(param):\
+          \ {ray_address}\")\n    p(f\"mlflow_tracking_uri(param): {mlflow_tracking_uri}\"\
+          )\n    p(f\"ray_namespace(param): {ray_namespace}\")\n    try:\n       \
+          \ pf = subprocess.check_output([sys.executable, \"-m\", \"pip\", \"freeze\"\
+          ], text=True)\n    except Exception as e:\n        pf = f\"<pip freeze failed:\
+          \ {e}>\"\n    for line in pf.splitlines()[:50]:\n        p(\"  \" + line)\n\
+          \n    try:\n        import torch as _t\n        drv_has_torch, drv_torch_detail\
+          \ = True, _t.__version__\n    except Exception as e:\n        drv_has_torch,\
+          \ drv_torch_detail = False, f\"import torch failed on driver: {e}\"\n  \
+          \  p(f\"driver_has_torch={drv_has_torch}; detail={drv_torch_detail}\")\n\
+          \n    import ray\n\n    # --- sanitize ---\n    ray_address = (ray_address\
+          \ or \"\").strip()\n    mlflow_tracking_uri = (mlflow_tracking_uri or \"\
+          \").strip()\n    ray_namespace = (ray_namespace or \"\").strip()\n\n   \
+          \ # --- preflight TCP ---\n    u = urlparse(ray_address)\n    host = u.hostname\
+          \ or ray_address\n    port = u.port or 10001\n    p(f\"=== Preflight: TCP\
+          \ connect to {host}:{port} ===\")\n    try:\n        s = socket.create_connection((host,\
+          \ port), timeout=5)\n        s.close()\n        p(\"Preflight OK: TCP reachable.\"\
+          )\n    except Exception as e:\n        p(f\"[FATAL] Cannot reach Ray client\
+          \ at {host}:{port}\\nError: {e}\")\n        raise RuntimeError(\"Ray TCP\
+          \ preflight failed\") from e\n\n    # --- connect ---\n    p(\"=== Connecting\
+          \ to Ray Cluster ===\")\n    try:\n        ray.init(\n            address=ray_address,\n\
+          \            namespace=ray_namespace,\n            ignore_reinit_error=True,\n\
+          \            log_to_driver=True,\n        )\n        p(\"Connected to Ray.\"\
+          )\n        p(f\"Ray version: {ray.__version__}\")\n        p(f\"Ray cluster\
+          \ resources: {ray.cluster_resources()}\")\n    except Exception as e:\n\
+          \        p(f\"[FATAL] ray.init failed: {e!r}\")\n        traceback.print_exc()\n\
+          \        raise\n\n    # ========== PROBES ==========\n    # 0) ping\n  \
+          \  @ray.remote\n    def ping():\n        return \"pong\"\n\n    p(\"===\
+          \ Ray ping ===\")\n    try:\n        pong = ray.get(ping.remote())\n   \
+          \     p(f\"ping: {pong}\")\n    except Exception as e:\n        p(f\"[FATAL]\
+          \ ping failed: {e!r}\")\n        traceback.print_exc()\n        raise\n\n\
+          \    # 1) Python-only probe\n    @ray.remote\n    def py_probe():\n    \
+          \    import sys, platform\n        return {\n            \"python\": sys.version,\n\
+          \            \"executable\": sys.executable,\n            \"platform\":\
+          \ platform.platform(),\n        }\n\n    p(\"=== Python probe on worker\
+          \ ===\")\n    try:\n        py_env = ray.get(py_probe.remote())\n      \
+          \  p(json.dumps(py_env, indent=2))\n    except Exception as e:\n       \
+          \ p(f\"[FATAL] py_probe failed: {e!r}\")\n        traceback.print_exc()\n\
+          \        raise\n\n    # 2) NumPy-only probe\n    @ray.remote\n    def numpy_probe():\n\
+          \        import numpy as np\n        import numpy.core.multiarray as _ma\
+          \  # \xE9p load extension\n        return {\"numpy_version\": np.__version__,\
+          \ \"numpy_file\": getattr(np, \"__file__\", \"\")}\n\n    p(\"=== NumPy\
+          \ probe on worker ===\")\n    try:\n        np_env = ray.get(numpy_probe.remote())\n\
+          \        p(json.dumps(np_env, indent=2))\n    except Exception as e:\n \
+          \       p(f\"[FATAL] numpy_probe failed: {e!r}\")\n        traceback.print_exc()\n\
+          \        raise\n\n    # 3) Torch probe\n    @ray.remote\n    def torch_probe():\n\
+          \        info = {}\n        try:\n            import torch\n           \
+          \ info[\"torch_ok\"] = True\n            info[\"torch_version\"] = torch.__version__\n\
+          \            cuda = torch.cuda.is_available()\n            info[\"cuda_available\"\
+          ] = cuda\n            info[\"cuda_device_count\"] = torch.cuda.device_count()\
+          \ if cuda else 0\n            x = torch.randn(8, 4) @ torch.randn(4, 3)\n\
+          \            info[\"mean\"] = float(x.mean().item())\n        except Exception\
+          \ as e:\n            info[\"torch_ok\"] = False\n            info[\"error\"\
+          ] = str(e)\n        return info\n\n    p(\"=== Torch probe on worker ===\"\
+          )\n    try:\n        t_probe = ray.get(torch_probe.remote())\n        p(json.dumps(t_probe,\
+          \ indent=2))\n    except Exception as e:\n        p(f\"[FATAL] torch_probe\
+          \ submit/get failed: {e!r}\")\n        traceback.print_exc()\n        raise\n\
+          \n    # 4) (optional) Tiny trainer \u2013 best effort\n    trainer_result,\
+          \ trainer_error = None, None\n    try:\n        from ray.train import ScalingConfig\n\
+          \        from ray.train.torch import TorchTrainer\n\n        def train_loop_per_worker():\n\
+          \            import torch\n            m = torch.nn.Linear(10, 2)\n    \
+          \        opt = torch.optim.SGD(m.parameters(), lr=0.01)\n            loss_fn\
+          \ = torch.nn.CrossEntropyLoss()\n            x = torch.randn(16, 10)\n \
+          \           y = torch.randint(0, 2, (16,))\n            for _ in range(2):\n\
+          \                opt.zero_grad()\n                out = m(x)\n         \
+          \       loss = loss_fn(out, y)\n                loss.backward()\n      \
+          \          opt.step()\n            return {\"final_loss\": float(loss.detach().cpu().item())}\n\
+          \n        use_gpu = bool(t_probe.get(\"cuda_available\"))\n        trainer\
+          \ = TorchTrainer(\n            train_loop_per_worker, scaling_config=ScalingConfig(num_workers=1,\
+          \ use_gpu=use_gpu)\n        )\n        trainer_result = trainer.fit()\n\
+          \        p(f\"TorchTrainer result: {trainer_result}\")\n    except Exception\
+          \ as e:\n        trainer_error = str(e)\n        p(f\"TorchTrainer failed:\
+          \ {trainer_error}\")\n\n    # --- MLflow ---\n    import mlflow\n\n    p(\"\
+          === Logging to MLflow ===\")\n    mlflow.set_tracking_uri(mlflow_tracking_uri)\n\
+          \    mlflow.set_experiment(experiment_name)\n    with mlflow.start_run(run_name=\"\
+          ray-torch-mlflow-smoke\") as run:\n        mlflow.log_param(\"ray_address\"\
+          , ray_address)\n        mlflow.log_param(\"ray_namespace\", ray_namespace)\n\
+          \        mlflow.log_param(\"driver_has_torch\", drv_has_torch)\n       \
+          \ mlflow.log_param(\"driver_torch_detail\", drv_torch_detail)\n\n      \
+          \  for k in [\"python\", \"executable\", \"platform\"]:\n            mlflow.log_param(\"\
+          worker_\" + k, str(py_env.get(k)))\n        mlflow.log_param(\"worker_numpy_version\"\
+          , np_env.get(\"numpy_version\"))\n        mlflow.log_param(\"worker_numpy_file\"\
+          , np_env.get(\"numpy_file\"))\n\n        for k in [\"torch_ok\", \"torch_version\"\
+          , \"cuda_available\", \"cuda_device_count\", \"mean\"]:\n            if\
+          \ k in t_probe:\n                mlflow.log_param(\"worker_\" + k, str(t_probe[k]))\n\
+          \n        if trainer_result and getattr(trainer_result, \"metrics\", None):\n\
+          \            try:\n                mlflow.log_metric(\"trainer_final_loss\"\
+          , float(trainer_result.metrics.get(\"final_loss\", -1)))\n            except\
+          \ Exception:\n                pass\n\n        payload = {\n            \"\
+          driver\": {\n                \"python\": sys.version,\n                \"\
+          executable\": sys.executable,\n                \"platform\": platform.platform(),\n\
+          \                \"pip_freeze\": pf,\n            },\n            \"ray\"\
+          : {\"version\": ray.__version__, \"cluster_resources\": ray.cluster_resources()},\n\
+          \            \"py_env\": py_env,\n            \"numpy_env\": np_env,\n \
+          \           \"torch_probe\": t_probe,\n            \"trainer_error\": trainer_error,\n\
+          \        }\n        fd, tmp = tempfile.mkstemp(prefix=\"ray_torch_mlflow_debug_\"\
+          , suffix=\".json\")\n        with os.fdopen(fd, \"w\") as f:\n         \
+          \   json.dump(payload, f, indent=2)\n        mlflow.log_artifact(tmp, artifact_path=\"\
+          debug\")\n        p(f\"MLflow run id: {run.info.run_id}\")\n\n    return\
+          \ json.dumps({\"worker_torch_ok\": t_probe.get(\"torch_ok\", False)})\n\n"
+        image: rayproject/ray:2.48.0-py312-cpu
+pipelineInfo:
+  name: ray-torch-mlflow-smoke-pipeline
+root:
+  dag:
+    tasks:
+      ray-torch-mlflow-smoke-test:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-ray-torch-mlflow-smoke-test
+        inputs:
+          parameters:
+            experiment_name:
+              componentInputParameter: experiment_name
+            mlflow_tracking_uri:
+              componentInputParameter: mlflow_tracking_uri
+            ray_address:
+              componentInputParameter: ray_address
+            ray_namespace:
+              componentInputParameter: ray_namespace
+        taskInfo:
+          name: ray-torch-mlflow-smoke-test
+  inputDefinitions:
+    parameters:
+      experiment_name:
+        defaultValue: kubeflow-ray-smoke
+        isOptional: true
+        parameterType: STRING
+      mlflow_tracking_uri:
+        defaultValue: http://mlflow-tracking.mlflow.svc.cluster.local:5000
+        isOptional: true
+        parameterType: STRING
+      ray_address:
+        defaultValue: ray://kuberay-raycluster-head-svc.development.svc.cluster.local:10001
+        isOptional: true
+        parameterType: STRING
+      ray_namespace:
+        defaultValue: default
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.2

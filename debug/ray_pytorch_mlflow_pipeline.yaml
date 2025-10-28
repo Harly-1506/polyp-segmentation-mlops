@@ -1,0 +1,119 @@
+# PIPELINE DEFINITION
+# Name: ray-pytorch-mlflow-pipeline
+# Description: Simple pipeline: Ray (train) + MLflow (log) + MinIO (artifact store)
+# Inputs:
+#    mlflow_tracking_uri: str [Default: 'http://mlflow-service.mlflow:5000']
+#    ray_address: str [Default: 'ray://kuberay-raycluster-head-svc.development:10001']
+components:
+  comp-ray-pytorch-train:
+    executorLabel: exec-ray-pytorch-train
+    inputDefinitions:
+      parameters:
+        experiment_name:
+          defaultValue: kubeflow-ray-test
+          isOptional: true
+          parameterType: STRING
+        mlflow_tracking_uri:
+          parameterType: STRING
+        ray_address:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-ray-pytorch-train:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - ray_pytorch_train
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'mlflow==3.1.0'\
+          \ 'ray[train]==2.48.0'  &&  python3 -m pip install --quiet --no-warn-script-location\
+          \ 'kfp==2.14.2' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"\
+          3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef ray_pytorch_train(\n    ray_address: str,\n    mlflow_tracking_uri:\
+          \ str,\n    experiment_name: str = \"kubeflow-ray-test\"\n) -> str:\n  \
+          \  import sys, subprocess, os\n\n    print(\"=== DEBUG: Python version ===\"\
+          )\n    print(sys.version)\n\n    print(\"=== DEBUG: sys.path ===\")\n  \
+          \  for p in sys.path:\n        print(\"  \", p)\n\n    print(\"=== DEBUG:\
+          \ pip list ===\")\n    subprocess.run([\"pip\", \"list\"], check=False)\n\
+          \n    print(\"=== DEBUG: which python ===\")\n    subprocess.run([\"which\"\
+          , \"python\"], check=False)\n\n    print(\"=== DEBUG: Environment variables\
+          \ ===\")\n    for k, v in os.environ.items():\n        if \"PYTHON\" in\
+          \ k or \"PATH\" in k:\n            print(f\"{k}={v}\")\n\n    # B\xE2y gi\u1EDD\
+          \ m\u1EDBi import c\xE1c th\u01B0 vi\u1EC7n ch\xEDnh\n    import mlflow\n\
+          \    import ray\n    from ray.train import ScalingConfig\n    from ray.train.torch\
+          \ import TorchTrainer\n\n    # Connect to Ray cluster (head service trong\
+          \ namespace development)\n    ray.init(address=ray_address)\n\n    # Define\
+          \ training loop\n    def train_loop_per_worker():\n        import torch\n\
+          \n        model = torch.nn.Linear(10, 2)\n        loss_fn = torch.nn.CrossEntropyLoss()\n\
+          \        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)\n\n  \
+          \      X = torch.randn(100, 10)\n        y = torch.randint(0, 2, (100,))\n\
+          \        for epoch in range(5):\n            optimizer.zero_grad()\n   \
+          \         out = model(X)\n            loss = loss_fn(out, y)\n         \
+          \   loss.backward()\n            optimizer.step()\n        return {\"loss\"\
+          : loss.item(), \"model_state_dict\": model.state_dict()}\n\n    # Run training\
+          \ on Ray\n    trainer = TorchTrainer(\n        train_loop_per_worker,\n\
+          \        scaling_config=ScalingConfig(num_workers=2, use_gpu=False),\n \
+          \   )\n    result = trainer.fit()\n\n    # Setup MLflow\n    mlflow.set_tracking_uri(mlflow_tracking_uri)\n\
+          \    mlflow.set_experiment(experiment_name)\n\n    # Log to MLflow\n   \
+          \ with mlflow.start_run():\n        mlflow.log_metric(\"final_loss\", result.metrics[\"\
+          loss\"])\n        # Log model\n        import tempfile, torch\n\n      \
+          \  with tempfile.TemporaryDirectory() as tmpdir:\n            model_path\
+          \ = os.path.join(tmpdir, \"model.pth\")\n            # l\u1EA5y model t\u1EEB\
+          \ k\u1EBFt qu\u1EA3 train\n            model = torch.nn.Linear(10, 2)\n\
+          \            model.load_state_dict(result.metrics[\"model_state_dict\"])\n\
+          \            torch.save(model.state_dict(), model_path)\n\n            mlflow.log_artifact(model_path,\
+          \ artifact_path=\"model\")\n\n    return \"Training finished. Metrics and\
+          \ model are logged to MLflow.\"\n\n"
+        image: python:3.12-slim
+pipelineInfo:
+  description: 'Simple pipeline: Ray (train) + MLflow (log) + MinIO (artifact store)'
+  name: ray-pytorch-mlflow-pipeline
+root:
+  dag:
+    tasks:
+      ray-pytorch-train:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-ray-pytorch-train
+        inputs:
+          parameters:
+            mlflow_tracking_uri:
+              componentInputParameter: mlflow_tracking_uri
+            ray_address:
+              componentInputParameter: ray_address
+        taskInfo:
+          name: ray-pytorch-train
+  inputDefinitions:
+    parameters:
+      mlflow_tracking_uri:
+        defaultValue: http://mlflow-service.mlflow:5000
+        isOptional: true
+        parameterType: STRING
+      ray_address:
+        defaultValue: ray://kuberay-raycluster-head-svc.development:10001
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.2

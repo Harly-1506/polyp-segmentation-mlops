@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: polyp-ui
+  namespace: kserve-inference
+  labels:
+    app: polyp-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: polyp-ui
+  template:
+    metadata:
+      labels:
+        app: polyp-ui
+    spec:
+      containers:
+        - name: gradio
+          image: asia-southeast1-docker.pkg.dev/polyp-mlops-1506/polyp-inference/polyp-gateway:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: RUN_BACKEND
+              value: "false"
+            - name: RUN_UI
+              value: "true"
+            - name: BACKEND_URL
+              value: http://polyp-segmentation-cpu-transformer.kserve-inference.svc.cluster.local
+            - name: PORT
+              value: "7860"
+            - name: GRADIO_SHARE
+              value: "false"
+          ports:
+            - containerPort: 7860
+              name: http
+          resources:
+            requests:
+              cpu: "250m"
+              memory: 512Mi
+            limits:
+              cpu: "500m"
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 7860
+            initialDelaySeconds: 30
+            periodSeconds: 10

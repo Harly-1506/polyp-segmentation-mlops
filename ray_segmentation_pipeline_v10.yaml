@@ -1,0 +1,1610 @@
+# PIPELINE DEFINITION
+# Name: ray-segmentation-training-pipeline
+# Inputs:
+#    config_overrides: str [Default: '']
+#    deploy_canary_percent: int [Default: 25.0]
+#    deploy_checkpoint_uri: str [Default: '']
+#    deploy_model_name: str [Default: '']
+#    deploy_model_version: str [Default: '']
+#    deploy_onnx_uri: str [Default: '']
+#    deploy_target_env: str [Default: '']
+#    enable_deployment: bool [Default: False]
+#    env_path: str [Default: '.env']
+#    evaluation_threshold: float [Default: 0.6]
+#    jenkins_job_name: str [Default: 'polyp-canary-promotion']
+#    jenkins_token: str [Default: '']
+#    jenkins_url: str [Default: 'http://polyp-jenkins.jenkins:8080']
+#    jenkins_user: str [Default: 'admin']
+#    kube_config_path: str [Default: 'training/configs/kube_configs.yaml']
+#    minio_access_key: str [Default: '']
+#    minio_endpoint: str [Default: '']
+#    minio_secret_key: str [Default: '']
+#    minio_secure: bool [Default: False]
+#    mlflow_s3_endpoint: str [Default: '']
+#    mlflow_tracking_uri: str [Default: '']
+#    profile: str [Default: '']
+#    ray_address: str [Default: '']
+#    ray_namespace: str [Default: '']
+#    ray_storage_path: str [Default: '']
+components:
+  comp-condition-1:
+    dag:
+      tasks:
+        condition-2:
+          componentRef:
+            name: comp-condition-2
+          inputs:
+            parameters:
+              pipelinechannel--deploy_canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              pipelinechannel--deploy_checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              pipelinechannel--deploy_model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              pipelinechannel--deploy_model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              pipelinechannel--deploy_onnx_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+              pipelinechannel--deploy_target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+              pipelinechannel--enable_deployment:
+                componentInputParameter: pipelinechannel--enable_deployment
+              pipelinechannel--evaluate-model-component-quality_gate:
+                componentInputParameter: pipelinechannel--evaluate-model-component-quality_gate
+              pipelinechannel--jenkins_job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              pipelinechannel--jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              pipelinechannel--jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              pipelinechannel--jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+          taskInfo:
+            name: condition-2
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--evaluate-model-component-quality_gate']
+              == 'true'
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-condition-2:
+    dag:
+      tasks:
+        condition-3:
+          componentRef:
+            name: comp-condition-3
+          inputs:
+            parameters:
+              pipelinechannel--deploy_canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              pipelinechannel--deploy_checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              pipelinechannel--deploy_model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              pipelinechannel--deploy_model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              pipelinechannel--deploy_onnx_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+              pipelinechannel--deploy_target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+              pipelinechannel--enable_deployment:
+                componentInputParameter: pipelinechannel--enable_deployment
+              pipelinechannel--evaluate-model-component-quality_gate:
+                componentInputParameter: pipelinechannel--evaluate-model-component-quality_gate
+              pipelinechannel--jenkins_job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              pipelinechannel--jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              pipelinechannel--jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              pipelinechannel--jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+          taskInfo:
+            name: condition-3
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--deploy_checkpoint_uri']
+              != ''
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-condition-3:
+    dag:
+      tasks:
+        condition-4:
+          componentRef:
+            name: comp-condition-4
+          inputs:
+            parameters:
+              pipelinechannel--deploy_canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              pipelinechannel--deploy_checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              pipelinechannel--deploy_model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              pipelinechannel--deploy_model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              pipelinechannel--deploy_onnx_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+              pipelinechannel--deploy_target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+              pipelinechannel--enable_deployment:
+                componentInputParameter: pipelinechannel--enable_deployment
+              pipelinechannel--evaluate-model-component-quality_gate:
+                componentInputParameter: pipelinechannel--evaluate-model-component-quality_gate
+              pipelinechannel--jenkins_job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              pipelinechannel--jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              pipelinechannel--jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              pipelinechannel--jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+          taskInfo:
+            name: condition-4
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--deploy_onnx_uri']
+              != ''
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-condition-4:
+    dag:
+      tasks:
+        condition-5:
+          componentRef:
+            name: comp-condition-5
+          dependentTasks:
+          - export-onnx-component
+          inputs:
+            parameters:
+              pipelinechannel--deploy_canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              pipelinechannel--deploy_checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              pipelinechannel--deploy_model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              pipelinechannel--deploy_model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              pipelinechannel--deploy_onnx_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+              pipelinechannel--deploy_target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+              pipelinechannel--enable_deployment:
+                componentInputParameter: pipelinechannel--enable_deployment
+              pipelinechannel--evaluate-model-component-quality_gate:
+                componentInputParameter: pipelinechannel--evaluate-model-component-quality_gate
+              pipelinechannel--export-onnx-component-Output:
+                taskOutputParameter:
+                  outputParameterKey: Output
+                  producerTask: export-onnx-component
+              pipelinechannel--jenkins_job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              pipelinechannel--jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              pipelinechannel--jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              pipelinechannel--jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+          taskInfo:
+            name: condition-5
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--deploy_target_env']
+              != ''
+        export-onnx-component:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-export-onnx-component
+          inputs:
+            parameters:
+              checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              output_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+          taskInfo:
+            name: export-onnx-component
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-condition-5:
+    dag:
+      tasks:
+        condition-6:
+          componentRef:
+            name: comp-condition-6
+          inputs:
+            parameters:
+              pipelinechannel--deploy_canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              pipelinechannel--deploy_checkpoint_uri:
+                componentInputParameter: pipelinechannel--deploy_checkpoint_uri
+              pipelinechannel--deploy_model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              pipelinechannel--deploy_model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              pipelinechannel--deploy_onnx_uri:
+                componentInputParameter: pipelinechannel--deploy_onnx_uri
+              pipelinechannel--deploy_target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+              pipelinechannel--enable_deployment:
+                componentInputParameter: pipelinechannel--enable_deployment
+              pipelinechannel--evaluate-model-component-quality_gate:
+                componentInputParameter: pipelinechannel--evaluate-model-component-quality_gate
+              pipelinechannel--export-onnx-component-Output:
+                componentInputParameter: pipelinechannel--export-onnx-component-Output
+              pipelinechannel--jenkins_job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              pipelinechannel--jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              pipelinechannel--jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              pipelinechannel--jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+          taskInfo:
+            name: condition-6
+          triggerPolicy:
+            condition: inputs.parameter_values['pipelinechannel--jenkins_token'] !=
+              ''
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--export-onnx-component-Output:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-condition-6:
+    dag:
+      tasks:
+        trigger-jenkins-component:
+          cachingOptions:
+            enableCache: true
+          componentRef:
+            name: comp-trigger-jenkins-component
+          inputs:
+            parameters:
+              canary_percent:
+                componentInputParameter: pipelinechannel--deploy_canary_percent
+              jenkins_token:
+                componentInputParameter: pipelinechannel--jenkins_token
+              jenkins_url:
+                componentInputParameter: pipelinechannel--jenkins_url
+              jenkins_user:
+                componentInputParameter: pipelinechannel--jenkins_user
+              job_name:
+                componentInputParameter: pipelinechannel--jenkins_job_name
+              model_name:
+                componentInputParameter: pipelinechannel--deploy_model_name
+              model_uri:
+                componentInputParameter: pipelinechannel--export-onnx-component-Output
+              model_version:
+                componentInputParameter: pipelinechannel--deploy_model_version
+              target_env:
+                componentInputParameter: pipelinechannel--deploy_target_env
+          taskInfo:
+            name: trigger-jenkins-component
+    inputDefinitions:
+      parameters:
+        pipelinechannel--deploy_canary_percent:
+          parameterType: NUMBER_INTEGER
+        pipelinechannel--deploy_checkpoint_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_model_name:
+          parameterType: STRING
+        pipelinechannel--deploy_model_version:
+          parameterType: STRING
+        pipelinechannel--deploy_onnx_uri:
+          parameterType: STRING
+        pipelinechannel--deploy_target_env:
+          parameterType: STRING
+        pipelinechannel--enable_deployment:
+          parameterType: BOOLEAN
+        pipelinechannel--evaluate-model-component-quality_gate:
+          parameterType: STRING
+        pipelinechannel--export-onnx-component-Output:
+          parameterType: STRING
+        pipelinechannel--jenkins_job_name:
+          parameterType: STRING
+        pipelinechannel--jenkins_token:
+          parameterType: STRING
+        pipelinechannel--jenkins_url:
+          parameterType: STRING
+        pipelinechannel--jenkins_user:
+          parameterType: STRING
+  comp-evaluate-model-component:
+    executorLabel: exec-evaluate-model-component
+    inputDefinitions:
+      artifacts:
+        training_summary_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+      parameters:
+        evaluation_threshold:
+          defaultValue: 0.6
+          isOptional: true
+          parameterType: NUMBER_DOUBLE
+    outputDefinitions:
+      artifacts:
+        evaluation_metrics:
+          artifactType:
+            schemaTitle: system.Metrics
+            schemaVersion: 0.0.1
+      parameters:
+        quality_gate:
+          parameterType: STRING
+  comp-export-onnx-component:
+    executorLabel: exec-export-onnx-component
+    inputDefinitions:
+      parameters:
+        checkpoint_uri:
+          parameterType: STRING
+        image_size:
+          defaultValue: 256.0
+          isOptional: true
+          parameterType: NUMBER_INTEGER
+        output_uri:
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-inspect-dataset-component:
+    executorLabel: exec-inspect-dataset-component
+    inputDefinitions:
+      parameters:
+        env_path:
+          defaultValue: .env
+          isOptional: true
+          parameterType: STRING
+        kube_config_path:
+          defaultValue: training/configs/kube_configs.yaml
+          isOptional: true
+          parameterType: STRING
+        minio_access_key:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        minio_endpoint:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        minio_secret_key:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        minio_secure:
+          defaultValue: false
+          isOptional: true
+          parameterType: BOOLEAN
+    outputDefinitions:
+      artifacts:
+        dataset_artifact:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        dataset_info_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+  comp-ray-train-component:
+    executorLabel: exec-ray-train-component
+    inputDefinitions:
+      artifacts:
+        best_config_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+        dataset_artifact:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        dataset_info_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+      parameters:
+        config_overrides:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        env_path:
+          defaultValue: .env
+          isOptional: true
+          parameterType: STRING
+        kube_config_path:
+          defaultValue: training/configs/kube_configs.yaml
+          isOptional: true
+          parameterType: STRING
+        mlflow_s3_endpoint:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        mlflow_tracking_uri:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        profile:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_address:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_namespace:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_storage_path:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        model_artifact:
+          artifactType:
+            schemaTitle: system.Model
+            schemaVersion: 0.0.1
+        training_summary_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+  comp-ray-tune-component:
+    executorLabel: exec-ray-tune-component
+    inputDefinitions:
+      artifacts:
+        dataset_artifact:
+          artifactType:
+            schemaTitle: system.Dataset
+            schemaVersion: 0.0.1
+        dataset_info_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+      parameters:
+        config_overrides:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        env_path:
+          defaultValue: .env
+          isOptional: true
+          parameterType: STRING
+        kube_config_path:
+          defaultValue: training/configs/kube_configs.yaml
+          isOptional: true
+          parameterType: STRING
+        mlflow_s3_endpoint:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        mlflow_tracking_uri:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        profile:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_address:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_namespace:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        ray_storage_path:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+    outputDefinitions:
+      artifacts:
+        best_config_artifact:
+          artifactType:
+            schemaTitle: system.Artifact
+            schemaVersion: 0.0.1
+  comp-trigger-jenkins-component:
+    executorLabel: exec-trigger-jenkins-component
+    inputDefinitions:
+      parameters:
+        canary_percent:
+          parameterType: NUMBER_INTEGER
+        jenkins_token:
+          parameterType: STRING
+        jenkins_url:
+          parameterType: STRING
+        jenkins_user:
+          parameterType: STRING
+        job_name:
+          parameterType: STRING
+        model_name:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        model_uri:
+          parameterType: STRING
+        model_version:
+          defaultValue: ''
+          isOptional: true
+          parameterType: STRING
+        target_env:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-evaluate-model-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - evaluate_model_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef evaluate_model_component(\n    evaluation_metrics: dsl.Output[Metrics],\n\
+          \    training_summary_artifact: dsl.Input[dsl.Artifact],\n    quality_gate:\
+          \ OutputPath(str),\n    evaluation_threshold: float = 0.6,\n) -> None:\n\
+          \    \"\"\"Evaluate the trained model against a simple quality bar.\"\"\"\
+          \n    import json\n    import logging\n    import re\n\n    logging.basicConfig(level=logging.INFO)\n\
+          \    logger = logging.getLogger(\"evaluate\")\n\n    from pathlib import\
+          \ Path\n\n    summary_path = Path(training_summary_artifact.path)\n    logger.info(\"\
+          Reading training summary from %s\", summary_path)\n    summary_text = summary_path.read_text(encoding=\"\
+          utf-8\")\n    logger.info(\"Training summary payload: %s\", summary_text)\n\
+          \    summary = json.loads(summary_text)\n\n    raw_dice_score = summary.get(\"\
+          best_dice_score\", 0.0)\n    try:\n        dice_score = float(raw_dice_score)\n\
+          \    except (TypeError, ValueError):\n        dice_score = None\n      \
+          \  if isinstance(raw_dice_score, str):\n            match = re.search(r\"\
+          ([-+]?\\d*\\.\\d+(?:[eE][-+]?\\d+)?|[-+]?\\d+)\", raw_dice_score)\n    \
+          \        if match:\n                try:\n                    dice_score\
+          \ = float(match.group(0))\n                except ValueError:\n        \
+          \            dice_score = None\n        if dice_score is None:\n       \
+          \     logger.warning(\n                \"Unable to parse best_dice_score\
+          \ '%s'; defaulting to 0.0\", raw_dice_score\n            )\n           \
+          \ dice_score = 0.0\n    passed = float(dice_score >= evaluation_threshold)\n\
+          \n    evaluation_metrics.log_metric(\"best_dice_score\", dice_score)\n \
+          \   evaluation_metrics.log_metric(\"passed_quality_check\", passed)\n  \
+          \  from pathlib import Path as _Path\n\n    _Path(quality_gate).write_text(\"\
+          true\" if bool(passed) else \"false\", encoding=\"utf-8\")\n\n    logger.info(\n\
+          \        \"Evaluation result: dice=%.4f threshold=%.4f passed=%s\",\n  \
+          \      dice_score,\n        evaluation_threshold,\n        bool(passed),\n\
+          \    )\n\n    if dice_score < evaluation_threshold:\n        raise RuntimeError(\n\
+          \            f\"Quality threshold not met: dice={dice_score:.4f} < {evaluation_threshold:.4f}\"\
+          \n        )\n\n"
+        image: harly1506/polyp-mlops:kfpv4
+    exec-export-onnx-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - export_onnx_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'torch==2.7.1'\
+          \ 'torchvision==0.22.1' 'google-cloud-storage==2.18.2' 'requests==2.32.3'\
+          \  &&  python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef export_onnx_component(\n    checkpoint_uri: str,\n    output_uri:\
+          \ str,\n    image_size: int = 256,\n) -> str:\n    \"\"\"Download a checkpoint,\
+          \ export it to ONNX, and upload the artifact.\"\"\"\n    import os\n   \
+          \ import subprocess\n    import sys\n    import tempfile\n    from pathlib\
+          \ import Path as _Path\n\n    import requests\n    import torch\n    from\
+          \ google.cloud import storage  # type: ignore\n\n    tmpdir = _Path(tempfile.mkdtemp())\n\
+          \    checkpoint_path = tmpdir / \"model.pth\"\n    output_path = tmpdir\
+          \ / \"model.onnx\"\n\n    if checkpoint_uri.startswith(\"gs://\"):\n   \
+          \     client = storage.Client()\n        bucket_name, *path_parts = checkpoint_uri[5:].split(\"\
+          /\", 1)\n        blob_path = path_parts[0]\n        bucket = client.bucket(bucket_name)\n\
+          \        blob = bucket.blob(blob_path)\n        blob.download_to_filename(checkpoint_path)\n\
+          \    else:\n        response = requests.get(checkpoint_uri, timeout=60)\n\
+          \        response.raise_for_status()\n        checkpoint_path.write_bytes(response.content)\n\
+          \n    model = torch.jit.load(checkpoint_path) if checkpoint_path.suffix\
+          \ == \".pt\" else None\n    if model is None:\n        try:\n          \
+          \  from training.models.unet import UNet  # type: ignore\n        except\
+          \ ImportError:\n            repo_url = os.environ.get(\"TRAINING_REPO_URL\"\
+          )\n            if not repo_url:\n                raise RuntimeError(\n \
+          \                   \"training.models not found. Set TRAINING_REPO_URL to\
+          \ a git repository containing the model definition.\"\n                )\n\
+          \            clone_dir = tmpdir / \"src\"\n            subprocess.run([\"\
+          apt-get\", \"update\"], check=True)\n            subprocess.run([\"apt-get\"\
+          , \"install\", \"-y\", \"git\"], check=True)\n            subprocess.run([\"\
+          git\", \"clone\", repo_url, str(clone_dir)], check=True)\n            sys.path.append(str(clone_dir))\n\
+          \            from training.models.unet import UNet  # type: ignore\n\n \
+          \       state = torch.load(checkpoint_path, map_location=\"cpu\")\n    \
+          \    if isinstance(state, dict) and \"state_dict\" in state:\n         \
+          \   state = state[\"state_dict\"]\n        model = UNet(1)\n        model.load_state_dict(state)\n\
+          \        model.eval()\n\n    dummy = torch.randn(1, 3, image_size, image_size)\n\
+          \    torch.onnx.export(\n        model,\n        dummy,\n        output_path,\n\
+          \        input_names=[\"input\"],\n        output_names=[\"output\"],\n\
+          \        dynamic_axes={\n            \"input\": {0: \"batch\", 2: \"height\"\
+          , 3: \"width\"},\n            \"output\": {0: \"batch\"},\n        },\n\
+          \        opset_version=18,\n        do_constant_folding=True,\n    )\n\n\
+          \    if output_uri.startswith(\"gs://\"):\n        bucket_name, *path_parts\
+          \ = output_uri[5:].split(\"/\", 1)\n        blob_path = path_parts[0]\n\
+          \        client = storage.Client()\n        bucket = client.bucket(bucket_name)\n\
+          \        blob = bucket.blob(blob_path)\n        blob.upload_from_filename(output_path)\n\
+          \    else:\n        output_path.rename(_Path(output_uri))\n\n    return\
+          \ output_uri\n\n"
+        image: python:3.12-slim
+    exec-inspect-dataset-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - inspect_dataset_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef inspect_dataset_component(\n    dataset_artifact: dsl.Output[dsl.Dataset],\n\
+          \    dataset_info_artifact: dsl.Output[dsl.Artifact],\n    kube_config_path:\
+          \ str = \"training/configs/kube_configs.yaml\",\n    env_path: str = \"\
+          .env\",\n    minio_endpoint: str = \"\",\n    minio_access_key: str = \"\
+          \",\n    minio_secret_key: str = \"\",\n    minio_secure: bool = False,\n\
+          ) -> None:\n    \"\"\"Inspect the dataset layout in MinIO and prepare local\
+          \ placeholders.\"\"\"\n    import logging\n    import platform\n    import\
+          \ sys\n    from collections import defaultdict\n    from pathlib import\
+          \ Path as _Path\n    from typing import Any, Dict\n    import json\n   \
+          \ import os\n    import yaml\n    import boto3\n    from botocore.client\
+          \ import Config as BotoConfig\n    from dotenv import dotenv_values\n\n\
+          \    logging.basicConfig(level=logging.INFO)\n    logger = logging.getLogger(\"\
+          inspect_dataset\")\n\n    logger.info(\n        \"Environment: python=%s\
+          \ platform=%s\",\n        sys.version.replace(\"\\n\", \" \"),\n       \
+          \ platform.platform(),\n    )\n\n\n    def _load_yaml_local(path: str) ->\
+          \ Dict[str, Any]:\n        from pathlib import Path as __Path\n\n      \
+          \  with __Path(path).open(\"r\", encoding=\"utf-8\") as fp:\n          \
+          \  return yaml.safe_load(fp) or {}\n\n    kube_cfg = _load_yaml_local(kube_config_path)\n\
+          \    bucket = kube_cfg.get(\"bucket\")\n    prefix = kube_cfg.get(\"dataset_prefix\"\
+          , \"\").rstrip(\"/\")\n    mlflow_cfg = kube_cfg.get(\"mlflow\", {})\n \
+          \   if not bucket or not prefix:\n        raise ValueError(\"bucket and\
+          \ dataset_prefix must be provided in kube_configs.yaml\")\n\n    dataset_root\
+          \ = _Path(dataset_artifact.path)\n    dataset_root.mkdir(parents=True, exist_ok=True)\n\
+          \    train_target = dataset_root / \"TrainDataset\"\n    (train_target /\
+          \ \"images\").mkdir(parents=True, exist_ok=True)\n    (train_target / \"\
+          masks\").mkdir(parents=True, exist_ok=True)\n    test_target = dataset_root\
+          \ / \"TestDataset\"\n    test_target.mkdir(parents=True, exist_ok=True)\n\
+          \n    env_values = {}\n    env_file = _Path(env_path)\n    if env_file.exists():\n\
+          \        env_values = {k: str(v) for k, v in dotenv_values(env_file).items()\
+          \ if v is not None}\n        for key, value in env_values.items():\n   \
+          \         os.environ.setdefault(key, value)\n        logger.info(\"Loaded\
+          \ %d entries from %s\", len(env_values), env_file)\n    else:\n        logger.warning(\"\
+          Env file %s not found; relying on provided parameters\", env_file)\n\n \
+          \   access_key = (\n        minio_access_key\n        or env_values.get(\"\
+          AWS_ACCESS_KEY_ID\")\n        or env_values.get(\"MINIO_ROOT_USER\")\n \
+          \   )\n    secret_key = (\n        minio_secret_key\n        or env_values.get(\"\
+          AWS_SECRET_ACCESS_KEY\")\n        or env_values.get(\"MINIO_ROOT_PASSWORD\"\
+          )\n    )\n    endpoint = (\n        minio_endpoint\n        or env_values.get(\"\
+          MINIO_ENDPOINT\")\n        or mlflow_cfg.get(\"s3_endpoint_url\")\n    \
+          \    or mlflow_cfg.get(\"s3_endpoint\")\n    )\n\n    if endpoint and not\
+          \ endpoint.startswith(\"http\"):\n        scheme = \"https\" if minio_secure\
+          \ else \"http\"\n        endpoint = f\"{scheme}://{endpoint.lstrip('/')\
+          \ }\"\n\n    if not endpoint:\n        raise ValueError(\"MinIO endpoint\
+          \ must be supplied either via parameters or .env file\")\n    if not access_key\
+          \ or not secret_key:\n        raise ValueError(\"MinIO credentials are required\"\
+          )\n\n    session = boto3.session.Session(\n        aws_access_key_id=access_key,\n\
+          \        aws_secret_access_key=secret_key,\n    )\n    s3 = session.resource(\n\
+          \        \"s3\",\n        endpoint_url=endpoint,\n        config=BotoConfig(signature_version=\"\
+          s3v4\"),\n        region_name=session.region_name or \"us-east-1\",\n  \
+          \  )\n    bucket_obj = s3.Bucket(bucket)\n\n    def _scan_train_prefix(source_prefix:\
+          \ str):\n        prefix = source_prefix.rstrip(\"/\")\n        counts =\
+          \ {\"images\": 0, \"masks\": 0, \"other\": 0}\n        samples = []\n  \
+          \      for obj in bucket_obj.objects.filter(Prefix=prefix):\n          \
+          \  key = obj.key\n            if key.endswith(\"/\"):\n                continue\n\
+          \            relative_key = key[len(prefix) :].lstrip(\"/\")\n         \
+          \   if not relative_key:\n                continue\n            top_level\
+          \ = relative_key.split(\"/\", 1)[0]\n            if top_level == \"images\"\
+          :\n                counts[\"images\"] += 1\n            elif top_level ==\
+          \ \"masks\":\n                counts[\"masks\"] += 1\n            else:\n\
+          \                counts[\"other\"] += 1\n            if len(samples) < 10:\n\
+          \                samples.append(relative_key)\n        counts[\"total\"\
+          ] = counts[\"images\"] + counts[\"masks\"] + counts[\"other\"]\n       \
+          \ return counts, samples\n\n    def _scan_test_prefix(source_prefix: str):\n\
+          \        prefix = source_prefix.rstrip(\"/\")\n        dataset_stats: Dict[str,\
+          \ Dict[str, Any]] = defaultdict(\n            lambda: {\"images\": 0, \"\
+          masks\": 0, \"other\": 0, \"samples\": []}\n        )\n        for obj in\
+          \ bucket_obj.objects.filter(Prefix=prefix):\n            key = obj.key\n\
+          \            if key.endswith(\"/\"):\n                continue\n       \
+          \     relative_key = key[len(prefix) :].lstrip(\"/\")\n            if not\
+          \ relative_key:\n                continue\n            parts = relative_key.split(\"\
+          /\")\n            dataset_name = parts[0] if parts else \"\"\n         \
+          \   subdir = parts[1] if len(parts) > 1 else \"\"\n            entry = dataset_stats[dataset_name]\n\
+          \            if subdir == \"images\":\n                entry[\"images\"\
+          ] += 1\n            elif subdir == \"masks\":\n                entry[\"\
+          masks\"] += 1\n            else:\n                entry[\"other\"] += 1\n\
+          \            if len(entry[\"samples\"]) < 5:\n                entry[\"samples\"\
+          ].append(relative_key)\n        return dataset_stats\n\n    train_candidates\
+          \ = [\n        f\"{prefix}/TrainDataset\",\n        f\"{prefix}/Traindataset\"\
+          ,\n    ]\n    test_prefix = f\"{prefix}/TestDataset\"\n\n    selected_train_prefix\
+          \ = None\n    train_counts = {\"images\": 0, \"masks\": 0, \"other\": 0,\
+          \ \"total\": 0}\n    train_samples: list[str] = []\n    for candidate in\
+          \ train_candidates:\n        counts, samples = _scan_train_prefix(candidate)\n\
+          \        if counts[\"total\"]:\n            selected_train_prefix = candidate.rstrip(\"\
+          /\")\n            train_counts = counts\n            train_samples = samples\n\
+          \            break\n    if not selected_train_prefix:\n        raise FileNotFoundError(\"\
+          No training files found under any TrainDataset prefix\")\n\n    logger.info(\n\
+          \        \"Training data overview: images=%d masks=%d other=%d total=%d\"\
+          ,\n        train_counts[\"images\"],\n        train_counts[\"masks\"],\n\
+          \        train_counts[\"other\"],\n        train_counts[\"total\"],\n  \
+          \  )\n    if train_samples:\n        logger.info(\"Sample training keys:\
+          \ %s\", train_samples)\n\n    test_stats = _scan_test_prefix(test_prefix)\n\
+          \    test_datasets = sorted(name for name in test_stats.keys() if name)\n\
+          \    if not test_datasets:\n        logger.warning(\"No test datasets discovered\
+          \ beneath prefix %s\", test_prefix)\n    else:\n        logger.info(\"Discovered\
+          \ %d test datasets: %s\", len(test_datasets), test_datasets)\n        for\
+          \ dataset_name in test_datasets:\n            stats = test_stats[dataset_name]\n\
+          \            total = stats[\"images\"] + stats[\"masks\"] + stats[\"other\"\
+          ]\n            logger.info(\n                \"Test dataset '%s': images=%d\
+          \ masks=%d other=%d total=%d\",\n                dataset_name,\n       \
+          \         stats[\"images\"],\n                stats[\"masks\"],\n      \
+          \          stats[\"other\"],\n                total,\n            )\n  \
+          \          if stats[\"samples\"]:\n                logger.info(\n      \
+          \              \"  Sample keys for %s: %s\", dataset_name, stats[\"samples\"\
+          ]\n                )\n            (test_target / dataset_name / \"images\"\
+          ).mkdir(parents=True, exist_ok=True)\n            (test_target / dataset_name\
+          \ / \"masks\").mkdir(parents=True, exist_ok=True)\n\n    def _summarise_directory(root:\
+          \ _Path, depth: int = 1) -> None:\n        \"\"\"Log a human readable snapshot\
+          \ of a directory tree.\"\"\"\n\n        def _relative(path: _Path) -> str:\n\
+          \            try:\n                return str(path.relative_to(root)) or\
+          \ \".\"\n            except ValueError:\n                return str(path)\n\
+          \n        logger.info(\"Directory snapshot for %s (depth=%d)\", root, depth)\n\
+          \        queue = [(root, 0)]\n        while queue:\n            current,\
+          \ level = queue.pop(0)\n            if level > depth:\n                continue\n\
+          \            try:\n                entries = sorted(current.iterdir())\n\
+          \            except FileNotFoundError:\n                logger.warning(\"\
+          Missing directory during snapshot: %s\", current)\n                continue\n\
+          \            logger.info(\"[%s] contains %d entries\", _relative(current),\
+          \ len(entries))\n            for entry in entries:\n                logger.info(\"\
+          \  %s %s\", \"-\" * (level + 1), _relative(entry))\n                if entry.is_dir():\n\
+          \                    queue.append((entry, level + 1))\n\n    _summarise_directory(dataset_root,\
+          \ depth=2)\n\n    configured_train_path = kube_cfg.get(\"train_path\")\n\
+          \    if not configured_train_path:\n        configured_train_path = f\"\
+          s3://{bucket}/{selected_train_prefix.lstrip('/')}\"\n\n    configured_test_path\
+          \ = kube_cfg.get(\"test_path\")\n    if not configured_test_path:\n    \
+          \    configured_test_path = f\"s3://{bucket}/{test_prefix.lstrip('/')}\"\
+          \n\n    logger.info(\"Configured remote train path: %s\", configured_train_path)\n\
+          \    logger.info(\"Configured remote test path: %s\", configured_test_path)\n\
+          \n    info = {\n        \"bucket\": bucket,\n        \"prefix\": prefix,\n\
+          \        \"root_dir\": str(dataset_root),\n        \"train_path\": str(configured_train_path),\n\
+          \        \"test_path\": str(configured_test_path),\n        \"local_train_dir\"\
+          : str((dataset_root / \"TrainDataset\").resolve()),\n        \"local_test_dir\"\
+          : str((dataset_root / \"TestDataset\").resolve()),\n        \"relative_train_dir\"\
+          : \"TrainDataset\",\n        \"relative_test_dir\": \"TestDataset\",\n \
+          \       \"test_datasets\": test_datasets,\n        \"train_prefix\": f\"\
+          {prefix}/TrainDataset\",\n        \"test_prefix\": test_prefix,\n      \
+          \  \"train_source_prefix\": selected_train_prefix,\n        \"test_source_prefix\"\
+          : test_prefix if test_datasets else \"\",\n        \"train_files_downloaded\"\
+          : train_counts[\"total\"],\n        \"test_files_downloaded\": sum(\n  \
+          \          stats[\"images\"] + stats[\"masks\"] + stats[\"other\"]\n   \
+          \         for stats in test_stats.values()\n        ),\n        \"train_image_count\"\
+          : train_counts[\"images\"],\n        \"train_mask_count\": train_counts[\"\
+          masks\"],\n        \"test_dataset_counts\": {\n            name: {\n   \
+          \             \"images\": test_stats[name][\"images\"],\n              \
+          \  \"masks\": test_stats[name][\"masks\"],\n                \"other\": test_stats[name][\"\
+          other\"],\n            }\n            for name in test_datasets\n      \
+          \  },\n        \"minio_endpoint_used\": endpoint,\n        \"minio_secure\"\
+          : bool(minio_secure),\n    }\n    with open(dataset_info_artifact.path,\
+          \ \"w\", encoding=\"utf-8\") as fp:\n        json.dump(info, fp, indent=2)\n\
+          \    logger.info(\"Dataset metadata written to %s\", dataset_info_artifact.path)\n\
+          \n"
+        image: harly1506/polyp-mlops:kfpv4
+    exec-ray-train-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - ray_train_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef ray_train_component(\n    dataset_artifact: dsl.Input[dsl.Dataset],\n\
+          \    dataset_info_artifact: dsl.Input[dsl.Artifact],\n    best_config_artifact:\
+          \ dsl.Input[dsl.Artifact],\n    model_artifact: dsl.Output[Model],\n   \
+          \ training_summary_artifact: dsl.Output[dsl.Artifact],\n    kube_config_path:\
+          \ str = \"training/configs/kube_configs.yaml\",\n    profile: str = \"\"\
+          ,\n    env_path: str = \".env\",\n    ray_address: str = \"\",\n    ray_namespace:\
+          \ str = \"\",\n    ray_storage_path: str = \"\",\n    mlflow_tracking_uri:\
+          \ str = \"\",\n    mlflow_s3_endpoint: str = \"\",\n    config_overrides:\
+          \ str = \"\",\n\n) -> None:\n    \"\"\"Run the final Ray training job using\
+          \ the best configuration.\"\"\"\n    import logging\n    import platform\n\
+          \    import sys\n    from pathlib import Path as _Path\n    import json\n\
+          \    import os\n    from typing import Any, Dict\n    import yaml\n\n  \
+          \  import ray\n    import torch\n    from dotenv import dotenv_values\n\n\
+          \    from training import ray_main\n    from training.configs.load_configs\
+          \ import load_config\n\n    logging.basicConfig(level=logging.INFO)\n  \
+          \  logger = logging.getLogger(\"ray_train\")\n\n    logger.info(\n     \
+          \   \"Environment: python=%s torch=%s ray=%s platform=%s\",\n        sys.version.replace(\"\
+          \\n\", \" \"),\n        torch.__version__,\n        ray.__version__,\n \
+          \       platform.platform(),\n    )\n\n    env_file = _Path(env_path)\n\
+          \    if env_file.exists():\n        env_values = {k: str(v) for k, v in\
+          \ dotenv_values(env_file).items() if v is not None}\n        for key, value\
+          \ in env_values.items():\n            os.environ.setdefault(key, value)\n\
+          \        logger.info(\"Loaded %d env vars from %s\", len(env_values), env_file)\n\
+          \n    dataset_info = json.loads(_Path(dataset_info_artifact.path).read_text(encoding=\"\
+          utf-8\"))\n    logger.info(\"Resolved dataset info: %s\", json.dumps(dataset_info,\
+          \ indent=2))\n    best_config = json.loads(_Path(best_config_artifact.path).read_text(encoding=\"\
+          utf-8\"))\n    logger.info(\"Loaded best config overrides: %s\", json.dumps(best_config,\
+          \ indent=2))\n\n    configs = load_config(kube_config_path)\n    if profile:\n\
+          \        configs[\"profile\"] = profile\n\n    dataset_root = _Path(dataset_artifact.path).resolve()\n\
+          \    local_train_path = dataset_root / \"TrainDataset\"\n    local_test_path\
+          \ = dataset_root / \"TestDataset\"\n    logger.info(\"Resolved local dataset\
+          \ root: %s\", dataset_root)\n    logger.info(\"Resolved training directory:\
+          \ %s\", local_train_path)\n    logger.info(\"Resolved test directory: %s\"\
+          , local_test_path)\n    discovered_tests = dataset_info.get(\"test_datasets\"\
+          , [])\n    if discovered_tests:\n        logger.info(\"Download step discovered\
+          \ test datasets: %s\", discovered_tests)\n    try:\n        available_test_dirs\
+          \ = [\n            p.name for p in local_test_path.iterdir() if p.is_dir()\n\
+          \        ]\n    except FileNotFoundError:\n        available_test_dirs =\
+          \ []\n    logger.info(\"Test directories available locally: %s\", available_test_dirs)\n\
+          \    if not local_train_path.exists():\n        logger.warning(\"Training\
+          \ dataset not found locally at %s\", local_train_path)\n\n    remote_train_path\
+          \ = dataset_info.get(\"train_path\") or configs.get(\"train_path\")\n  \
+          \  remote_test_path = dataset_info.get(\"test_path\") or configs.get(\"\
+          test_path\")\n    if not remote_train_path:\n        raise ValueError(\"\
+          Remote train_path is required in dataset metadata or config\")\n    if not\
+          \ remote_test_path:\n        logger.warning(\"Remote test_path missing;\
+          \ falling back to local TestDataset path\")\n        remote_test_path =\
+          \ str(local_test_path)\n\n    configs[\"train_path\"] = str(remote_train_path)\n\
+          \    configs[\"test_path\"] = str(remote_test_path)\n    configs[\"local_train_dir\"\
+          ] = str(local_train_path)\n    configs[\"local_test_dir\"] = str(local_test_path)\n\
+          \    configs[\"dataset_info\"] = dataset_info\n    configs.setdefault(\n\
+          \        \"worker_dataset_root\",\n        os.getenv(\"RAY_WORKER_DATASET_ROOT\"\
+          , \"/tmp/ray-dataset\"),\n    )\n    model_dir = _Path(model_artifact.path).resolve()\n\
+          \    model_dir.mkdir(parents=True, exist_ok=True)\n    configs[\"train_save\"\
+          ] = str(model_dir)\n\n    def _merge_mlflow_config_local(\n        configs:\
+          \ Dict[str, Any], tracking_uri: str, s3_endpoint: str\n    ) -> None:\n\
+          \        mlflow_cfg = configs.setdefault(\"mlflow\", {})\n        if \"\
+          s3_endpoint_url\" in mlflow_cfg and \"s3_endpoint\" not in mlflow_cfg:\n\
+          \            mlflow_cfg[\"s3_endpoint\"] = mlflow_cfg.get(\"s3_endpoint_url\"\
+          )\n        if tracking_uri:\n            mlflow_cfg[\"tracking_uri\"] =\
+          \ tracking_uri\n        if s3_endpoint:\n            mlflow_cfg[\"s3_endpoint\"\
+          ] = s3_endpoint\n\n    _merge_mlflow_config_local(configs, mlflow_tracking_uri,\
+          \ mlflow_s3_endpoint)\n\n    mlflow_cfg = configs.setdefault(\"mlflow\"\
+          , {})\n    run_name = mlflow_cfg.get(\"run_name\")\n    if not run_name\
+          \ or run_name == \"auto\":\n        run_name = ray_main.create_run_name(configs)\n\
+          \    final_run_name = f\"{run_name}_final\"\n    mlflow_cfg[\"run_name\"\
+          ] = final_run_name\n    configs[\"mlflow_run_name\"] = final_run_name\n\
+          \    configs[\"is_final_training\"] = True\n\n    overrides_text = str(config_overrides\
+          \ or \"\").strip()\n    overrides: Dict[str, Any] = {}\n\n    if overrides_text:\n\
+          \        def _parse_overrides(text: str) -> Dict[str, Any]:\n          \
+          \  try:\n                parsed = json.loads(text)\n            except json.JSONDecodeError:\n\
+          \                try:\n                    parsed = yaml.safe_load(text)\n\
+          \                except yaml.YAMLError as exc:\n                    raise\
+          \ ValueError(\n                        \"Failed to parse config_overrides\
+          \ as JSON or YAML\"\n                    ) from exc\n            if parsed\
+          \ is None:\n                return {}\n            if not isinstance(parsed,\
+          \ dict):\n                raise ValueError(\n                    \"config_overrides\
+          \ must decode to a mapping/dictionary\"\n                )\n           \
+          \ return parsed\n\n        overrides = _parse_overrides(overrides_text)\n\
+          \        if overrides:\n            logger.info(\n                \"Applying\
+          \ config overrides for final training: %s\",\n                json.dumps(overrides,\
+          \ indent=2),\n            )\n            ray_main._deep_update(configs,\
+          \ overrides)\n\n    ray_main._deep_update(configs, best_config)\n\n    if\
+          \ overrides:\n        logger.info(\"Reapplying overrides after merging best\
+          \ config\")\n        ray_main._deep_update(configs, overrides)\n\n    ray_configs\
+          \ = dict(configs.get(\"ray\") or {})\n    if ray_address:\n        ray_configs[\"\
+          address\"] = ray_address\n    if ray_namespace:\n        ray_configs[\"\
+          namespace\"] = ray_namespace\n    if ray_storage_path:\n        ray_configs[\"\
+          storage_path\"] = ray_storage_path\n    configs[\"ray\"] = ray_configs\n\
+          \n    ray_main.setup_logging(str(configs.get(\"log_level\", \"INFO\")))\n\
+          \    ray_main.resolve_mlflow_env(configs)\n    ray_main.seed_everything(int(configs.get(\"\
+          seed\", 1234)))\n\n    ray_main._override_ray_from_env(ray_configs)\n  \
+          \  storage_path = ray_main.resolve_storage_path(configs)\n    scaling_config\
+          \ = ray_main.build_scaling_config(configs)\n\n    def _propagate_worker_env(ray_cfg:\
+          \ Dict[str, Any]) -> None:\n        runtime_env = dict(ray_cfg.get(\"runtime_env\"\
+          ) or {})\n        env_vars = dict(runtime_env.get(\"env_vars\") or {})\n\
+          \n        for key in (\n            \"AWS_ACCESS_KEY_ID\",\n           \
+          \ \"AWS_SECRET_ACCESS_KEY\",\n            \"AWS_SESSION_TOKEN\",\n     \
+          \       \"MINIO_ROOT_USER\",\n            \"MINIO_ROOT_PASSWORD\",\n   \
+          \         \"MLFLOW_S3_ENDPOINT_URL\",\n            \"MLFLOW_TRACKING_URI\"\
+          ,\n            \"MINIO_ENDPOINT\",\n        ):\n            value = os.getenv(key)\n\
+          \            if not value and key == \"MLFLOW_TRACKING_URI\":\n        \
+          \        value = mlflow_cfg.get(\"tracking_uri\")\n            if value\
+          \ and key not in env_vars:\n                env_vars[key] = value\n\n  \
+          \      endpoint = dataset_info.get(\"minio_endpoint_used\")\n        if\
+          \ endpoint and \"MLFLOW_S3_ENDPOINT_URL\" not in env_vars:\n           \
+          \ env_vars[\"MLFLOW_S3_ENDPOINT_URL\"] = str(endpoint)\n\n        if env_vars:\n\
+          \            runtime_env[\"env_vars\"] = env_vars\n            ray_cfg[\"\
+          runtime_env\"] = runtime_env\n\n    _propagate_worker_env(ray_configs)\n\
+          \n    init_kwargs = {\n        \"address\": ray_configs.get(\"address\"\
+          ),\n        \"namespace\": ray_configs.get(\"namespace\"),\n        \"runtime_env\"\
+          : ray_configs.get(\"runtime_env\"),\n        \"ignore_reinit_error\": True,\n\
+          \        \"local_mode\": bool(ray_configs.get(\"local_mode\", False)),\n\
+          \    }\n    init_kwargs = {k: v for k, v in init_kwargs.items() if v}\n\n\
+          \    def _mask_sensitive(data: Any):\n        if isinstance(data, dict):\n\
+          \            masked = {}\n            for key, value in data.items():\n\
+          \                if any(token in key.lower() for token in (\"key\", \"secret\"\
+          , \"password\", \"token\")):\n                    masked[key] = \"***\"\n\
+          \                else:\n                    masked[key] = _mask_sensitive(value)\n\
+          \            return masked\n        if isinstance(data, list):\n       \
+          \     return [_mask_sensitive(item) for item in data]\n        return data\n\
+          \n    logger.info(\n        \"Final Ray init kwargs: %s\",\n        json.dumps(_mask_sensitive(init_kwargs),\
+          \ indent=2),\n    )\n    logger.info(\"Resolved Ray storage path: %s\",\
+          \ storage_path)\n\n    def _serialise_scaling_config(config):\n        for\
+          \ attr in (\"as_dict\", \"to_dict\", \"as_legacy_dict\"):\n            if\
+          \ hasattr(config, attr):\n                method = getattr(config, attr)\n\
+          \                try:\n                    return method()\n           \
+          \     except TypeError:\n                    continue\n        if hasattr(config,\
+          \ \"__dict__\"):\n            return config.__dict__\n        return str(config)\n\
+          \n    scaling_serialisable = _serialise_scaling_config(scaling_config)\n\
+          \    if isinstance(scaling_serialisable, str):\n        logger.info(\"Resolved\
+          \ Ray scaling config: %s\", scaling_serialisable)\n    else:\n        logger.info(\n\
+          \            \"Resolved Ray scaling config: %s\",\n            json.dumps(scaling_serialisable,\
+          \ indent=2),\n        )\n    logger.info(\"Resolved model output directory:\
+          \ %s\", configs[\"train_save\"])\n    logger.info(\"Resolved MLflow config:\
+          \ %s\", json.dumps(configs.get(\"mlflow\", {}), indent=2))\n\n    logger.info(\"\
+          Dataset artifact directory listing:\")\n    for path in sorted(_Path(dataset_artifact.path).glob(\"\
+          *\")):\n        logger.info(\" - %s\", path)\n\n    ray.init(**init_kwargs)\n\
+          \n    try:\n        result = ray_main.run_final_training(configs, scaling_config,\
+          \ storage_path)\n        raw_metrics = getattr(result, \"metrics\", {})\
+          \ or {}\n        metrics_dict = dict(raw_metrics) if isinstance(raw_metrics,\
+          \ dict) else {}\n        safe_metrics = {}\n        for key, value in metrics_dict.items():\n\
+          \            try:\n                json.dumps(value)\n                safe_metrics[key]\
+          \ = value\n            except (TypeError, ValueError):\n               \
+          \ safe_metrics[key] = repr(value)\n        summary = {\n            \"train_path\"\
+          : configs[\"train_path\"],\n            \"test_path\": configs[\"test_path\"\
+          ],\n            \"train_save\": configs[\"train_save\"],\n            \"\
+          mlflow_run_name\": configs.get(\"mlflow\", {}).get(\"run_name\"),\n    \
+          \        \"best_dice_score\": safe_metrics.get(\"best_dice_score\", 0.0),\n\
+          \            \"ray_metrics\": safe_metrics,\n            \"test_datasets\"\
+          : dataset_info.get(\"test_datasets\", []),\n            \"best_config\"\
+          : best_config,\n        }\n        with open(training_summary_artifact.path,\
+          \ \"w\", encoding=\"utf-8\") as fp:\n            json.dump(summary, fp,\
+          \ indent=2)\n        logger.info(\"Training summary written to %s\", training_summary_artifact.path)\n\
+          \        model_artifact.metadata[\"train_save\"] = configs[\"train_save\"\
+          ]\n        logger.info(\n            \"Ray result metrics (%d keys): %s\"\
+          ,\n            len(safe_metrics),\n            json.dumps(safe_metrics,\
+          \ indent=2),\n        )\n    finally:\n        ray.shutdown()\n\n"
+        image: harly1506/polyp-mlops:kfpv4
+    exec-ray-tune-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - ray_tune_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef ray_tune_component(\n    dataset_artifact: dsl.Input[dsl.Dataset],\n\
+          \    dataset_info_artifact: dsl.Input[dsl.Artifact],\n    best_config_artifact:\
+          \ dsl.Output[dsl.Artifact],\n    kube_config_path: str = \"training/configs/kube_configs.yaml\"\
+          ,\n    profile: str = \"\",\n    env_path: str = \".env\",\n    ray_address:\
+          \ str = \"\",\n    ray_namespace: str = \"\",\n    ray_storage_path: str\
+          \ = \"\",\n    mlflow_tracking_uri: str = \"\",\n    mlflow_s3_endpoint:\
+          \ str = \"\",\n    config_overrides: str = \"\",\n\n) -> None:\n    \"\"\
+          \"Run Ray Tune to obtain the best configuration.\"\"\"\n    import logging\n\
+          \    import platform\n    import sys\n    from pathlib import Path as _Path\n\
+          \    import json\n    import os\n    from typing import Any, Dict\n    import\
+          \ ray\n    import torch\n    from dotenv import dotenv_values\n    import\
+          \ yaml\n\n    from training import ray_main\n    from training.configs.load_configs\
+          \ import load_config\n\n    logging.basicConfig(level=logging.INFO)\n  \
+          \  logger = logging.getLogger(\"ray_tune\")\n\n    logger.info(\n      \
+          \  \"Environment: python=%s torch=%s ray=%s platform=%s\",\n        sys.version.replace(\"\
+          \\n\", \" \"),\n        torch.__version__,\n        ray.__version__,\n \
+          \       platform.platform(),\n    )\n\n    env_file = _Path(env_path)\n\
+          \    if env_file.exists():\n        env_values = {k: str(v) for k, v in\
+          \ dotenv_values(env_file).items() if v is not None}\n        for key, value\
+          \ in env_values.items():\n            os.environ.setdefault(key, value)\n\
+          \        logger.info(\"Loaded %d env vars from %s\", len(env_values), env_file)\n\
+          \n    dataset_info = json.loads(_Path(dataset_info_artifact.path).read_text(encoding=\"\
+          utf-8\"))\n    logger.info(\"Resolved dataset info: %s\", json.dumps(dataset_info,\
+          \ indent=2))\n\n    configs = load_config(kube_config_path)\n    mlflow_cfg\
+          \ = dict(configs.get(\"mlflow\") or {})\n    if profile:\n        configs[\"\
+          profile\"] = profile\n\n    #placeholder paths, that won't actually be used\
+          \ for training, just for checking paths and showing in the logs\n    dataset_root\
+          \ = _Path(dataset_artifact.path).resolve()\n    local_train_path = dataset_root\
+          \ / \"TrainDataset\"\n    local_test_path = dataset_root / \"TestDataset\"\
+          \n    logger.info(\"Resolved local dataset root: %s\", dataset_root)\n \
+          \   logger.info(\"Resolved training directory: %s\", local_train_path)\n\
+          \    logger.info(\"Resolved test directory: %s\", local_test_path)\n   \
+          \ discovered_tests = dataset_info.get(\"test_datasets\", [])\n    if discovered_tests:\n\
+          \        logger.info(\"Download step discovered test datasets: %s\", discovered_tests)\n\
+          \    try:\n        available_test_dirs = [\n            p.name for p in\
+          \ local_test_path.iterdir() if p.is_dir()\n        ]\n    except FileNotFoundError:\n\
+          \        available_test_dirs = []\n    logger.info(\"Test directories available\
+          \ locally: %s\", available_test_dirs)\n    if not local_train_path.exists():\n\
+          \        logger.warning(\"Training dataset not found locally at %s\", local_train_path)\n\
+          \n    remote_train_path = dataset_info.get(\"train_path\") or configs.get(\"\
+          train_path\")\n    remote_test_path = dataset_info.get(\"test_path\") or\
+          \ configs.get(\"test_path\")\n    if not remote_train_path:\n        raise\
+          \ ValueError(\"Remote train_path is required in dataset metadata or config\"\
+          )\n    if not remote_test_path:\n        logger.warning(\"Remote test_path\
+          \ missing; falling back to local TestDataset path\")\n        remote_test_path\
+          \ = str(local_test_path)\n\n    configs[\"train_path\"] = str(remote_train_path)\n\
+          \    configs[\"test_path\"] = str(remote_test_path)\n    configs[\"local_train_dir\"\
+          ] = str(local_train_path)\n    configs[\"local_test_dir\"] = str(local_test_path)\n\
+          \    configs[\"dataset_info\"] = dataset_info\n    configs.setdefault(\n\
+          \        \"worker_dataset_root\",\n        os.getenv(\"RAY_WORKER_DATASET_ROOT\"\
+          , \"/tmp/ray-dataset\"),\n    )\n    tune_save_dir = (dataset_root / \"\
+          artifacts\").resolve()\n    tune_save_dir.mkdir(parents=True, exist_ok=True)\n\
+          \    configs[\"train_save\"] = str(tune_save_dir)\n\n    def _merge_mlflow_config_local(\n\
+          \        configs: Dict[str, Any], tracking_uri: str, s3_endpoint: str\n\
+          \    ) -> None:\n        mlflow_cfg = configs.setdefault(\"mlflow\", {})\n\
+          \        if \"s3_endpoint_url\" in mlflow_cfg and \"s3_endpoint\" not in\
+          \ mlflow_cfg:\n            mlflow_cfg[\"s3_endpoint\"] = mlflow_cfg.get(\"\
+          s3_endpoint_url\")\n        if tracking_uri:\n            mlflow_cfg[\"\
+          tracking_uri\"] = tracking_uri\n        if s3_endpoint:\n            mlflow_cfg[\"\
+          s3_endpoint\"] = s3_endpoint\n\n    _merge_mlflow_config_local(configs,\
+          \ mlflow_tracking_uri, mlflow_s3_endpoint)\n\n    mlflow_cfg = configs.setdefault(\"\
+          mlflow\", {})\n    run_name = mlflow_cfg.get(\"run_name\")\n\n    if not\
+          \ run_name or run_name == \"auto\":\n        run_name = ray_main.create_run_name(configs)\n\
+          \        mlflow_cfg[\"run_name\"] = run_name\n    configs[\"mlflow_run_name\"\
+          ] = run_name\n    overrides_text = str(config_overrides or \"\").strip()\n\
+          \n    if overrides_text:\n        def _parse_overrides(text: str) -> Dict[str,\
+          \ Any]:\n            try:\n                parsed = json.loads(text)\n \
+          \           except json.JSONDecodeError:\n                try:\n       \
+          \             parsed = yaml.safe_load(text)\n                except yaml.YAMLError\
+          \ as exc:\n                    raise ValueError(\n                     \
+          \   \"Failed to parse config_overrides as JSON or YAML\"\n             \
+          \       ) from exc\n            if parsed is None:\n                return\
+          \ {}\n            if not isinstance(parsed, dict):\n                raise\
+          \ ValueError(\n                    \"config_overrides must decode to a mapping/dictionary\"\
+          \n                )\n            return parsed\n\n        overrides = _parse_overrides(overrides_text)\n\
+          \        if overrides:\n            logger.info(\n                \"Applying\
+          \ config overrides before tuning: %s\",\n                json.dumps(overrides,\
+          \ indent=2),\n            )\n            ray_main._deep_update(configs,\
+          \ overrides)\n    ray_configs = dict(configs.get(\"ray\") or {})\n    if\
+          \ ray_address:\n        ray_configs[\"address\"] = ray_address\n    if ray_namespace:\n\
+          \        ray_configs[\"namespace\"] = ray_namespace\n    if ray_storage_path:\n\
+          \        ray_configs[\"storage_path\"] = ray_storage_path\n    configs[\"\
+          ray\"] = ray_configs\n\n    ray_main.setup_logging(str(configs.get(\"log_level\"\
+          , \"INFO\")))\n    ray_main.resolve_mlflow_env(configs)\n    ray_main.seed_everything(int(configs.get(\"\
+          seed\", 1234)))\n\n    ray_main._override_ray_from_env(ray_configs)\n  \
+          \  storage_path = ray_main.resolve_storage_path(configs)\n    scaling_config\
+          \ = ray_main.build_scaling_config(configs)\n\n    def _propagate_worker_env(ray_cfg:\
+          \ Dict[str, Any]) -> None:\n        runtime_env = dict(ray_cfg.get(\"runtime_env\"\
+          ) or {})\n        env_vars = dict(runtime_env.get(\"env_vars\") or {})\n\
+          \n        # Propagate common MinIO/MLflow credential keys so Ray workers\
+          \ can\n        # materialise datasets without relying on cluster-level secrets.\n\
+          \        for key in (\n            \"AWS_ACCESS_KEY_ID\",\n            \"\
+          AWS_SECRET_ACCESS_KEY\",\n            \"AWS_SESSION_TOKEN\",\n         \
+          \   \"MINIO_ROOT_USER\",\n            \"MINIO_ROOT_PASSWORD\",\n       \
+          \     \"MLFLOW_S3_ENDPOINT_URL\",\n            \"MLFLOW_TRACKING_URI\",\n\
+          \            \"MINIO_ENDPOINT\",\n        ):\n            value = os.getenv(key)\n\
+          \            if not value and key == \"MLFLOW_TRACKING_URI\":\n        \
+          \        value = mlflow_cfg.get(\"tracking_uri\")\n            if value\
+          \ and key not in env_vars:\n                env_vars[key] = value\n\n  \
+          \      endpoint = dataset_info.get(\"minio_endpoint_used\")\n        if\
+          \ endpoint and \"MLFLOW_S3_ENDPOINT_URL\" not in env_vars:\n           \
+          \ env_vars[\"MLFLOW_S3_ENDPOINT_URL\"] = str(endpoint)\n\n        if env_vars:\n\
+          \            runtime_env[\"env_vars\"] = env_vars\n            ray_cfg[\"\
+          runtime_env\"] = runtime_env\n\n    _propagate_worker_env(ray_configs)\n\
+          \n    init_kwargs = {\n        \"address\": ray_configs.get(\"address\"\
+          ),\n        \"namespace\": ray_configs.get(\"namespace\"),\n        \"runtime_env\"\
+          : ray_configs.get(\"runtime_env\"),\n        \"ignore_reinit_error\": True,\n\
+          \        \"local_mode\": bool(ray_configs.get(\"local_mode\", False)),\n\
+          \    }\n    init_kwargs = {k: v for k, v in init_kwargs.items() if v}\n\n\
+          \    def _mask_sensitive(data: Any):\n        if isinstance(data, dict):\n\
+          \            masked = {}\n            for key, value in data.items():\n\
+          \                if any(token in key.lower() for token in (\"key\", \"secret\"\
+          , \"password\", \"token\")):\n                    masked[key] = \"***\"\n\
+          \                else:\n                    masked[key] = _mask_sensitive(value)\n\
+          \            return masked\n        if isinstance(data, list):\n       \
+          \     return [_mask_sensitive(item) for item in data]\n        return data\n\
+          \n    logger.info(\n        \"Final Ray init kwargs: %s\",\n        json.dumps(_mask_sensitive(init_kwargs),\
+          \ indent=2),\n)\n    logger.info(\"Resolved Ray storage path: %s\", storage_path)\n\
+          \n    def _serialise_scaling_config(config):\n        for attr in (\"as_dict\"\
+          , \"to_dict\", \"as_legacy_dict\"):\n            if hasattr(config, attr):\n\
+          \                method = getattr(config, attr)\n                try:\n\
+          \                    return method()\n                except TypeError:\n\
+          \                    continue\n        if hasattr(config, \"__dict__\"):\n\
+          \            return config.__dict__\n        return str(config)\n\n    scaling_serialisable\
+          \ = _serialise_scaling_config(scaling_config)\n    if isinstance(scaling_serialisable,\
+          \ str):\n        logger.info(\"Resolved Ray scaling config: %s\", scaling_serialisable)\n\
+          \    else:\n        logger.info(\n            \"Resolved Ray scaling config:\
+          \ %s\",\n            json.dumps(scaling_serialisable, indent=2),\n     \
+          \   )\n    logger.info(\"Resolved training save dir for tuning: %s\", configs[\"\
+          train_save\"])\n    logger.info(\"Resolved MLflow config: %s\", json.dumps(configs.get(\"\
+          mlflow\", {}), indent=2))\n\n    logger.info(\"Dataset artifact directory\
+          \ listing:\")\n    for path in sorted(_Path(dataset_artifact.path).glob(\"\
+          *\")):\n        logger.info(\" - %s\", path)\n\n    ray.init(**init_kwargs)\n\
+          \n    try:\n        best_config = ray_main.run_tuning(configs, scaling_config,\
+          \ storage_path)\n        logger.info(\"Best hyperparameters: %s\", json.dumps(best_config,\
+          \ indent=2))\n        with open(best_config_artifact.path, \"w\", encoding=\"\
+          utf-8\") as fp:\n            json.dump(best_config, fp, indent=2)\n    finally:\n\
+          \        ray.shutdown()\n\n"
+        image: harly1506/polyp-mlops:kfpv4
+    exec-trigger-jenkins-component:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - trigger_jenkins_component
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'requests==2.32.3'\
+          \  &&  python3 -m pip install --quiet --no-warn-script-location 'kfp==2.14.3'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef trigger_jenkins_component(\n    jenkins_url: str,\n    jenkins_user:\
+          \ str,\n    jenkins_token: str,\n    job_name: str,\n    model_uri: str,\n\
+          \    canary_percent: int,\n    target_env: str,\n    model_name: str = \"\
+          \",\n    model_version: str = \"\",\n) -> None:\n    \"\"\"Invoke a Jenkins\
+          \ job to promote a new model version.\"\"\"\n    import requests\n\n   \
+          \ build_url = f\"{jenkins_url.rstrip('/')}/job/{job_name}/buildWithParameters\"\
+          \n    payload = {\n        \"MODEL_URI\": model_uri,\n        \"CANARY_PERCENT\"\
+          : canary_percent,\n        \"TARGET_ENV\": target_env,\n    }\n    if model_name:\n\
+          \        payload[\"MODEL_NAME\"] = model_name\n    if model_version:\n \
+          \       payload[\"MODEL_VERSION\"] = model_version\n    if not jenkins_token:\n\
+          \        raise ValueError(\"jenkins_token must be provided to trigger the\
+          \ Jenkins job\")\n\n    response = requests.post(\n        build_url,\n\
+          \        data=payload,\n        auth=(jenkins_user, jenkins_token),\n  \
+          \      timeout=30,\n    )\n    if response.status_code not in (200, 201,\
+          \ 202):\n        raise RuntimeError(\n            f\"Failed to trigger Jenkins\
+          \ build: {response.status_code} {response.text}\"\n        )\n\n"
+        image: python:3.12-slim
+pipelineInfo:
+  name: ray-segmentation-training-pipeline
+root:
+  dag:
+    tasks:
+      condition-1:
+        componentRef:
+          name: comp-condition-1
+        dependentTasks:
+        - evaluate-model-component
+        inputs:
+          parameters:
+            pipelinechannel--deploy_canary_percent:
+              componentInputParameter: deploy_canary_percent
+            pipelinechannel--deploy_checkpoint_uri:
+              componentInputParameter: deploy_checkpoint_uri
+            pipelinechannel--deploy_model_name:
+              componentInputParameter: deploy_model_name
+            pipelinechannel--deploy_model_version:
+              componentInputParameter: deploy_model_version
+            pipelinechannel--deploy_onnx_uri:
+              componentInputParameter: deploy_onnx_uri
+            pipelinechannel--deploy_target_env:
+              componentInputParameter: deploy_target_env
+            pipelinechannel--enable_deployment:
+              componentInputParameter: enable_deployment
+            pipelinechannel--evaluate-model-component-quality_gate:
+              taskOutputParameter:
+                outputParameterKey: quality_gate
+                producerTask: evaluate-model-component
+            pipelinechannel--jenkins_job_name:
+              componentInputParameter: jenkins_job_name
+            pipelinechannel--jenkins_token:
+              componentInputParameter: jenkins_token
+            pipelinechannel--jenkins_url:
+              componentInputParameter: jenkins_url
+            pipelinechannel--jenkins_user:
+              componentInputParameter: jenkins_user
+        taskInfo:
+          name: condition-1
+        triggerPolicy:
+          condition: inputs.parameter_values['pipelinechannel--enable_deployment']
+            == true
+      evaluate-model-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-evaluate-model-component
+        dependentTasks:
+        - ray-train-component
+        inputs:
+          artifacts:
+            training_summary_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: training_summary_artifact
+                producerTask: ray-train-component
+          parameters:
+            evaluation_threshold:
+              componentInputParameter: evaluation_threshold
+        taskInfo:
+          name: evaluate-model-component
+      inspect-dataset-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-inspect-dataset-component
+        inputs:
+          parameters:
+            env_path:
+              componentInputParameter: env_path
+            kube_config_path:
+              componentInputParameter: kube_config_path
+            minio_access_key:
+              componentInputParameter: minio_access_key
+            minio_endpoint:
+              componentInputParameter: minio_endpoint
+            minio_secret_key:
+              componentInputParameter: minio_secret_key
+            minio_secure:
+              componentInputParameter: minio_secure
+        taskInfo:
+          name: inspect-dataset-component
+      ray-train-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-ray-train-component
+        dependentTasks:
+        - inspect-dataset-component
+        - ray-tune-component
+        inputs:
+          artifacts:
+            best_config_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: best_config_artifact
+                producerTask: ray-tune-component
+            dataset_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: dataset_artifact
+                producerTask: inspect-dataset-component
+            dataset_info_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: dataset_info_artifact
+                producerTask: inspect-dataset-component
+          parameters:
+            config_overrides:
+              componentInputParameter: config_overrides
+            env_path:
+              componentInputParameter: env_path
+            kube_config_path:
+              componentInputParameter: kube_config_path
+            mlflow_s3_endpoint:
+              componentInputParameter: mlflow_s3_endpoint
+            mlflow_tracking_uri:
+              componentInputParameter: mlflow_tracking_uri
+            profile:
+              componentInputParameter: profile
+            ray_address:
+              componentInputParameter: ray_address
+            ray_namespace:
+              componentInputParameter: ray_namespace
+            ray_storage_path:
+              componentInputParameter: ray_storage_path
+        taskInfo:
+          name: ray-train-component
+      ray-tune-component:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-ray-tune-component
+        dependentTasks:
+        - inspect-dataset-component
+        inputs:
+          artifacts:
+            dataset_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: dataset_artifact
+                producerTask: inspect-dataset-component
+            dataset_info_artifact:
+              taskOutputArtifact:
+                outputArtifactKey: dataset_info_artifact
+                producerTask: inspect-dataset-component
+          parameters:
+            config_overrides:
+              componentInputParameter: config_overrides
+            env_path:
+              componentInputParameter: env_path
+            kube_config_path:
+              componentInputParameter: kube_config_path
+            mlflow_s3_endpoint:
+              componentInputParameter: mlflow_s3_endpoint
+            mlflow_tracking_uri:
+              componentInputParameter: mlflow_tracking_uri
+            profile:
+              componentInputParameter: profile
+            ray_address:
+              componentInputParameter: ray_address
+            ray_namespace:
+              componentInputParameter: ray_namespace
+            ray_storage_path:
+              componentInputParameter: ray_storage_path
+        taskInfo:
+          name: ray-tune-component
+  inputDefinitions:
+    parameters:
+      config_overrides:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      deploy_canary_percent:
+        defaultValue: 25.0
+        isOptional: true
+        parameterType: NUMBER_INTEGER
+      deploy_checkpoint_uri:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      deploy_model_name:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      deploy_model_version:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      deploy_onnx_uri:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      deploy_target_env:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      enable_deployment:
+        defaultValue: false
+        isOptional: true
+        parameterType: BOOLEAN
+      env_path:
+        defaultValue: .env
+        isOptional: true
+        parameterType: STRING
+      evaluation_threshold:
+        defaultValue: 0.6
+        isOptional: true
+        parameterType: NUMBER_DOUBLE
+      jenkins_job_name:
+        defaultValue: polyp-canary-promotion
+        isOptional: true
+        parameterType: STRING
+      jenkins_token:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      jenkins_url:
+        defaultValue: http://polyp-jenkins.jenkins:8080
+        isOptional: true
+        parameterType: STRING
+      jenkins_user:
+        defaultValue: admin
+        isOptional: true
+        parameterType: STRING
+      kube_config_path:
+        defaultValue: training/configs/kube_configs.yaml
+        isOptional: true
+        parameterType: STRING
+      minio_access_key:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      minio_endpoint:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      minio_secret_key:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      minio_secure:
+        defaultValue: false
+        isOptional: true
+        parameterType: BOOLEAN
+      mlflow_s3_endpoint:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      mlflow_tracking_uri:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      profile:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      ray_address:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      ray_namespace:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+      ray_storage_path:
+        defaultValue: ''
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.3

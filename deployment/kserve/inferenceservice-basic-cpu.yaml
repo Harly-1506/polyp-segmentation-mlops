@@ -1,0 +1,80 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: polyp-segmentation-cpu
+  namespace: kserve-inference
+  # annotations:
+  #   autoscaling.knative.dev/minScale: "0"
+spec:
+  predictor:
+    serviceAccountName: kserve-model-sa  
+    minReplicas: 0
+    maxReplicas: 3
+    annotations:
+      autoscaling.knative.dev/minScale: "0"
+    model:
+      modelFormat:
+        name: triton
+      runtime: kserve-tritonserver
+      storageUri: gs://my-polyp-models/models
+      resources:
+        limits:
+          cpu: "1"
+          memory: 2Gi
+        requests:
+          cpu: "200m"
+          memory: 1Gi
+
+  # canary:                             
+  #   predictor:
+  #     serviceAccountName: kserve-model-sa
+  #     model:
+  #       modelFormat: { name: triton }
+  #       runtime: kserve-tritonserver
+  #       storageUri: gs://my-polyp-models/models-canary
+  #       resources:
+  #         requests: { cpu: "500m", memory: "1Gi" }
+  #         limits:   { cpu: "1",    memory: "2Gi" }
+
+  # canaryTrafficPercent: 0
+
+  transformer:
+    annotations:
+      autoscaling.knative.dev/minScale: "0"
+    containers:
+      - name: gateway
+        image: asia-southeast1-docker.pkg.dev/polyp-mlops-1506/polyp-inference/polyp-gateway:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: RUN_BACKEND
+            value: "true"
+          - name: RUN_UI
+            value: "false"
+          - name: APP_TRITON_URL
+                  #http://<inferenceservice-name>-predictor.<namespace>.svc.cluster.local:80
+            value: "http://polyp-segmentation-cpu-predictor.kserve-inference.svc.cluster.local:80"
+          - name: APP_TRITON_MODEL_NAME
+            value: polyp-segmentation
+          - name: APP_ENABLE_MOCK
+            value: "false"
+          - name: APP_LOG_LEVEL
+            value: INFO
+          - name: APP_REQUEST_TIMEOUT_SECONDS
+            value: "60"
+          - name: BACKEND_PORT
+            value: "8081"
+        ports:
+          - containerPort: 8081
+            name: http1
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 30
+          periodSeconds: 10

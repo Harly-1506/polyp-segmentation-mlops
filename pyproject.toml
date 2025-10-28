@@ -1,0 +1,46 @@
+[project]
+name = "polyp-mlops"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3>=1.40.30",
+    "tqdm==4.67.1",
+]
+
+[dependency-groups]
+ml = [
+    "boto3>=1.40.30",
+    "kfp>=2.14.3",
+    "loguru==0.7.3",
+    "matplotlib>=3.10.6",
+    "mlflow==3.1.0",
+    "numpy>=2.1.2,<3.0",
+    "pyarrow==20.0.0",
+    "python-dotenv==1.0.1",
+    "ray[client]==2.48.0",
+    "thop==0.1.1.post2209072238",
+    "torch==2.7.1",
+    "torchvision==0.22.1",
+    "tqdm==4.67.1",
+    "onnx==1.19.0",
+    "onnxruntime==1.23.0",
+]
+inference = [
+    "fastapi==0.115.12",
+    "uvicorn==0.34.0",
+    "python-multipart==0.0.20",
+    "gradio==5.35.0",
+    "httpx==0.27.2",
+    "loguru==0.7.3",
+    "pillow==11.0.0",
+    "numpy>=2.1.2,<3.0",
+    "prometheus-client==0.21.1",
+    "pydantic-settings==2.6.1",
+    "tritonclient[http]==2.60.0",
+]
+observability = [
+    "opentelemetry-sdk==1.37.0",
+    "opentelemetry-exporter-otlp-proto-grpc==1.37.0",
+]

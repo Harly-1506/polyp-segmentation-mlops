@@ -1,0 +1,67 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: polyp-segmentation-gpu
+  namespace: kserve-inference
+  annotations:
+    autoscaling.knative.dev/minScale: "1"
+spec:
+  predictor:
+    minReplicas: 1
+    maxReplicas: 2
+    model:
+      modelFormat:
+        name: triton
+      runtime: kserve-tritonserver   
+      storageUri: gs://my-polyp-models/polyp-segmentation/onnx
+      resources:
+        limits:
+          nvidia.com/gpu: 1
+          cpu: "4"
+          memory: 8Gi
+        requests:
+          nvidia.com/gpu: 1
+          cpu: "2"
+          memory: 4Gi
+      env:
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"
+  transformer:
+    containers:
+      - name: gateway
+        image: asia-southeast1-docker.pkg.dev/polyp-mlops-1506/polyp-inference/polyp-gateway:gpu
+        env:
+          - name: RUN_BACKEND
+            value: "true"
+          - name: RUN_UI
+            value: "false"
+          - name: APP_TRITON_URL
+            value: http://polyp-segmentation-gpu-predictor.kserve-inference.svc.cluster.local:80
+          - name: APP_TRITON_MODEL_NAME
+            value: polyp-segmentation
+          - name: APP_ENABLE_MOCK
+            value: "false"
+          - name: APP_LOG_LEVEL
+            value: INFO
+          - name: APP_REQUEST_TIMEOUT_SECONDS
+            value: "60"
+        ports:
+          - containerPort: 8081
+            name: http
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 30

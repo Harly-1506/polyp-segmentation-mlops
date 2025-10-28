@@ -1,0 +1,61 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment and dependency folders
+.venv/
+env/
+venv/
+Pipfile.lock
+poetry.lock
+
+# OS / editor garbage
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+
+# Logs
+*.log
+logs/
+*.out
+
+# Git
+.git/
+.gitignore
+
+# Docker-related
+Dockerfile
+.dockerignore
+
+# IDEs
+.vscode/
+.idea/
+
+# Large or generated files (checkpoints, weights, outputs)
+# **/checkpoints/*
+**/runs/*
+**/outputs/*
+**/wandb/*
+**/tensorboard/*
+# *.pth
+*.pt
+*.ckpt
+*.onnx
+
+data/
+datasets1/
+dataset/
+debug/
+*.zip
+model_pth/
+ray/
+mlruns/
+ray_cluster/

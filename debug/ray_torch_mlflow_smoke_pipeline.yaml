@@ -1,0 +1,200 @@
+# PIPELINE DEFINITION
+# Name: ray-torch-mlflow-smoke-pipeline
+# Inputs:
+#    experiment_name: str [Default: 'kubeflow-ray-smoke']
+#    mlflow_tracking_uri: str [Default: 'http://mlflow-tracking.mlflow.svc.cluster.local:5000']
+#    ray_address: str [Default: 'ray://kuberay-raycluster-head-svc.development.svc.cluster.local:10001']
+#    ray_namespace: str [Default: 'default']
+components:
+  comp-ray-torch-mlflow-smoke-test:
+    executorLabel: exec-ray-torch-mlflow-smoke-test
+    inputDefinitions:
+      parameters:
+        experiment_name:
+          defaultValue: kubeflow-ray-smoke
+          isOptional: true
+          parameterType: STRING
+        mlflow_tracking_uri:
+          parameterType: STRING
+        ray_address:
+          parameterType: STRING
+        ray_namespace:
+          defaultValue: default
+          isOptional: true
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-ray-torch-mlflow-smoke-test:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - ray_torch_mlflow_smoke_test
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'ray[default]==2.48.0'\
+          \ 'mlflow==2.14.1'  &&  python3 -m pip install --quiet --no-warn-script-location\
+          \ 'kfp==2.14.2' '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"\
+          3.9\"' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef ray_torch_mlflow_smoke_test(\n    ray_address: str,\n    mlflow_tracking_uri:\
+          \ str,\n    experiment_name: str = \"kubeflow-ray-smoke\",\n    ray_namespace:\
+          \ str = \"default\",\n) -> str:\n    import os\n    import sys\n    import\
+          \ platform\n    import json\n    import tempfile\n    import subprocess\n\
+          \    import time\n\n    print(\"\\n=== DRIVER ENV INFO (before Ray connect)\
+          \ ===\")\n    print(f\"python: {sys.executable}\")\n    print(f\"python_version:\
+          \ {sys.version}\")\n    print(f\"platform: {platform.platform()}\")\n  \
+          \  print(f\"ray_address(param): {ray_address}\")\n    print(f\"mlflow_tracking_uri(param):\
+          \ {mlflow_tracking_uri}\")\n    print(f\"ray_namespace(param): {ray_namespace}\"\
+          )\n    print(f\"env.RAY_ADDRESS: {os.environ.get('RAY_ADDRESS')}\")\n  \
+          \  print(f\"env.MLFLOW_TRACKING_URI: {os.environ.get('MLFLOW_TRACKING_URI')}\"\
+          )\n    try:\n        pip_freeze = subprocess.check_output([sys.executable,\
+          \ \"-m\", \"pip\", \"freeze\"]).decode()\n    except Exception as e:\n \
+          \       pip_freeze = f\"<pip freeze failed: {e}>\"\n    print(\"pip freeze\
+          \ (driver) \u2014 first 100 lines:\\n\" + \"\\n\".join(pip_freeze.splitlines()[:100]))\n\
+          \n    # Try importing torch ON THE DRIVER just to show behavior, but don't\
+          \ fail the run\n    try:\n        import torch as _torch  # noqa: F401\n\
+          \        driver_has_torch = True\n        driver_torch_detail = _torch.__version__\n\
+          \    except Exception as e:\n        driver_has_torch = False\n        driver_torch_detail\
+          \ = f\"import torch failed on driver: {e}\"\n    print(f\"driver_has_torch={driver_has_torch};\
+          \ detail={driver_torch_detail}\")\n\n    import ray\n\n    print(\"\\n===\
+          \ Connecting to Ray Cluster ===\")\n    # NOTE: Use your head-svc FQDN,\
+          \ e.g. \"ray://raycluster-kuberay-head-svc.development.svc.cluster.local:10001\"\
+          \n    ray.init(address=ray_address, namespace=ray_namespace, ignore_reinit_error=True,\
+          \ log_to_driver=True)\n\n    print(\"Ray version:\", ray.__version__)\n\
+          \    print(\"Ray cluster resources:\", ray.cluster_resources())\n    print(\"\
+          Ray nodes:\")\n    for n in ray.nodes():\n        print(\" -\", n.get(\"\
+          NodeManagerAddress\"), n.get(\"Alive\"), n.get(\"NodeName\"))\n\n    @ray.remote\n\
+          \    def torch_probe():\n        \"\"\"Runs ON A WORKER. Validates torch\
+          \ availability and basic CUDA info.\"\"\"\n        info = {}\n        try:\n\
+          \            import torch\n            info[\"torch_import_ok\"] = True\n\
+          \            info[\"torch_version\"] = torch.__version__\n            info[\"\
+          cuda_available\"] = torch.cuda.is_available()\n            info[\"cuda_device_count\"\
+          ] = torch.cuda.device_count() if torch.cuda.is_available() else 0\n    \
+          \        info[\"selected_device\"] = \"cuda\" if torch.cuda.is_available()\
+          \ else \"cpu\"\n            # Do a tiny tensor op to ensure CUDA/CPU math\
+          \ actually works\n            x = torch.randn(8, 4)\n            y = torch.randn(4,\
+          \ 3)\n            z = x @ y  # matrix multiply\n            info[\"sample_tensor_mean\"\
+          ] = float(z.mean().item())\n        except Exception as e:\n           \
+          \ info[\"torch_import_ok\"] = False\n            info[\"error\"] = str(e)\n\
+          \        import platform, os, sys\n        info[\"python_version\"] = sys.version\n\
+          \        info[\"hostname\"] = platform.node()\n        info[\"pid\"] = os.getpid()\n\
+          \        return info\n\n    print(\"\\n=== Probing torch on a Ray worker\
+          \ ===\")\n    worker_probe = ray.get(torch_probe.remote())\n    print(\"\
+          worker_probe: \", json.dumps(worker_probe, indent=2))\n\n    # Optional:\
+          \ A teeny TorchTrainer run to verify train loop executes on worker w/ torch\n\
+          \    trainer_result = None\n    trainer_error = None\n    try:\n       \
+          \ from ray.train import ScalingConfig\n        from ray.train.torch import\
+          \ TorchTrainer\n\n        def train_loop_per_worker():\n            import\
+          \ torch\n            model = torch.nn.Linear(10, 2)\n            opt = torch.optim.SGD(model.parameters(),\
+          \ lr=0.01)\n            loss_fn = torch.nn.CrossEntropyLoss()\n        \
+          \    x = torch.randn(16, 10)\n            y = torch.randint(0, 2, (16,))\n\
+          \            for _ in range(2):\n                opt.zero_grad()\n     \
+          \           out = model(x)\n                loss = loss_fn(out, y)\n   \
+          \             loss.backward()\n                opt.step()\n            return\
+          \ {\"final_loss\": float(loss.detach().cpu().item())}\n\n        trainer\
+          \ = TorchTrainer(\n            train_loop_per_worker=train_loop_per_worker,\n\
+          \            scaling_config=ScalingConfig(num_workers=1, use_gpu=worker_probe.get(\"\
+          cuda_available\", False)),\n        )\n        trainer_result = trainer.fit()\n\
+          \        print(\"TorchTrainer result:\", trainer_result)\n    except Exception\
+          \ as e:\n        trainer_error = str(e)\n        print(\"TorchTrainer failed:\"\
+          , trainer_error)\n\n    # ========== MLflow logging on the DRIVER ==========\n\
+          \    import mlflow\n\n    print(\"\\n=== Logging to MLflow ===\")\n    mlflow.set_tracking_uri(mlflow_tracking_uri)\n\
+          \    mlflow.set_experiment(experiment_name)\n    with mlflow.start_run(run_name=\"\
+          ray-torch-mlflow-smoke\") as run:\n        # Params\n        mlflow.log_param(\"\
+          ray_address\", ray_address)\n        mlflow.log_param(\"ray_namespace\"\
+          , ray_namespace)\n        mlflow.log_param(\"driver_has_torch\", driver_has_torch)\n\
+          \        mlflow.log_param(\"driver_torch_detail\", driver_torch_detail)\n\
+          \        mlflow.log_param(\"worker_hostname\", worker_probe.get(\"hostname\"\
+          ))\n        mlflow.log_param(\"worker_python\", worker_probe.get(\"python_version\"\
+          ))\n\n        # Metrics\n        if \"sample_tensor_mean\" in worker_probe:\n\
+          \            mlflow.log_metric(\"worker_sample_tensor_mean\", float(worker_probe[\"\
+          sample_tensor_mean\"]))\n        mlflow.log_metric(\"worker_cuda_available\"\
+          , int(bool(worker_probe.get(\"cuda_available\", False))))\n        mlflow.log_metric(\"\
+          worker_cuda_device_count\", float(worker_probe.get(\"cuda_device_count\"\
+          , 0)))\n\n        if trainer_result and getattr(trainer_result, \"metrics\"\
+          , None):\n            # Ray AIR Result: prefer .metrics if present\n   \
+          \         try:\n                mlflow.log_metric(\"trainer_final_loss\"\
+          , float(trainer_result.metrics.get(\"final_loss\", -1)))\n            except\
+          \ Exception:\n                pass\n\n        # Artifact: driver env + pip\n\
+          \        debug_payload = {\n            \"driver\": {\n                \"\
+          python\": sys.executable,\n                \"python_version\": sys.version,\n\
+          \                \"platform\": platform.platform(),\n                \"\
+          driver_has_torch\": driver_has_torch,\n                \"driver_torch_detail\"\
+          : driver_torch_detail,\n                \"pip_freeze\": pip_freeze,\n  \
+          \          },\n            \"ray\": {\n                \"version\": ray.__version__,\n\
+          \                \"cluster_resources\": ray.cluster_resources(),\n     \
+          \           \"nodes\": ray.nodes(),\n            },\n            \"worker_probe\"\
+          : worker_probe,\n            \"trainer_error\": trainer_error,\n       \
+          \ }\n        fd, tmp_path = tempfile.mkstemp(prefix=\"ray_torch_mlflow_debug_\"\
+          , suffix=\".json\")\n        with os.fdopen(fd, \"w\") as f:\n         \
+          \   json.dump(debug_payload, f, indent=2)\n        mlflow.log_artifact(tmp_path,\
+          \ artifact_path=\"debug\")\n        print(f\"MLflow run id: {run.info.run_id}\"\
+          )\n\n    # Return a compact summary string for KFP UI\n    summary = {\n\
+          \        \"driver_has_torch\": driver_has_torch,\n        \"driver_torch_detail\"\
+          : driver_torch_detail,\n        \"worker_torch_ok\": worker_probe.get(\"\
+          torch_import_ok\", False),\n        \"worker_torch_version\": worker_probe.get(\"\
+          torch_version\"),\n        \"worker_cuda_available\": worker_probe.get(\"\
+          cuda_available\", False),\n        \"trainer_error\": trainer_error,\n \
+          \   }\n    return json.dumps(summary)\n\n"
+        image: python:3.11-slim
+pipelineInfo:
+  name: ray-torch-mlflow-smoke-pipeline
+root:
+  dag:
+    tasks:
+      ray-torch-mlflow-smoke-test:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-ray-torch-mlflow-smoke-test
+        inputs:
+          parameters:
+            experiment_name:
+              componentInputParameter: experiment_name
+            mlflow_tracking_uri:
+              componentInputParameter: mlflow_tracking_uri
+            ray_address:
+              componentInputParameter: ray_address
+            ray_namespace:
+              componentInputParameter: ray_namespace
+        taskInfo:
+          name: ray-torch-mlflow-smoke-test
+  inputDefinitions:
+    parameters:
+      experiment_name:
+        defaultValue: kubeflow-ray-smoke
+        isOptional: true
+        parameterType: STRING
+      mlflow_tracking_uri:
+        defaultValue: http://mlflow-tracking.mlflow.svc.cluster.local:5000
+        isOptional: true
+        parameterType: STRING
+      ray_address:
+        defaultValue: ray://kuberay-raycluster-head-svc.development.svc.cluster.local:10001
+        isOptional: true
+        parameterType: STRING
+      ray_namespace:
+        defaultValue: default
+        isOptional: true
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.14.2

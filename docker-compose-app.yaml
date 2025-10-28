@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  my-app:
+    image: asia-southeast1-docker.pkg.dev/polyp-mlops-1506/polyp-inference/polyp-gateway:latest
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    pull_policy: if_not_present
+    ports:
+      - "8081:8081"  
+      - "7860:7860"  
+    environment:
+      RUN_UI: "true"
+      APP_TRITON_URL: "http://host.docker.internal:8000"
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped

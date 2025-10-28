@@ -1,0 +1,121 @@
+version: "3.9"
+services:
+  mlflow:
+    restart: always
+    build:
+      context: ./mlflow
+      dockerfile: Dockerfile.mlflow
+    image: mlflow_server:latest
+    container_name: mlflow_server
+    ports:
+      - "${MLFLOW_SERVER_PORT:-5001}:5000"
+    env_file:
+      - .env
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-admin}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-admin1234}
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:${MINIO_API_PORT:-9000}
+      - MLFLOW_S3_IGNORE_TLS=true
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://0.0.0.0:5001}
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://${POSTGRES_USER:-mlflow-store}:${POSTGRES_PASSWORD:-mlflow-store}@mlflow_postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB_NAME:-mlflow-store}
+      --host 0.0.0.0
+      --port 5000
+      --serve-artifacts
+      --artifacts-destination s3://${MLFLOW_BUCKET_NAME:-mlflow-artifacts-store}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      postgres:
+          condition: service_healthy
+      minio:
+          condition: service_healthy
+    networks:
+      - ml-network
+
+  postgres:
+    image: postgres:14
+    restart: always
+    container_name: mlflow_postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mlflow-store}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mlflow-store}
+      POSTGRES_DB: ${POSTGRES_DB_NAME:-mlflow-store}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ml-network
+
+  init-buckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minio http://minio:9000 ${MINIO_ROOT_USER:-admin} ${MINIO_ROOT_PASSWORD:-admin1234}) do echo '...waiting...' && sleep 1; done;
+
+      /usr/bin/mc mb minio/$${MLFLOW_BUCKET_NAME} || true;
+      /usr/bin/mc mb minio/$${DVC_BUCKET_NAME} || true;
+      /usr/bin/mc mb minio/$${TRAINING_BUCKET_NAME} || true;
+
+      /usr/bin/mc policy set $${BUCKET_POLICY:-public} minio/$${MLFLOW_BUCKET_NAME};
+      /usr/bin/mc policy set $${BUCKET_POLICY:-public} minio/$${DVC_BUCKET_NAME};
+      /usr/bin/mc policy set $${BUCKET_POLICY:-public} minio/$${TRAINING_BUCKET_NAME};
+
+      echo 'Buckets initialized:';
+      echo '- $${MLFLOW_BUCKET_NAME} ($${BUCKET_POLICY:-public})';
+      echo '- $${DVC_BUCKET_NAME} ($${BUCKET_POLICY:-public})';
+      echo '- $${TRAINING_BUCKET_NAME} ($${BUCKET_POLICY:-public})';
+      "
+    networks:
+      - ml-network
+
+
+  minio:
+    image: minio/minio
+    restart: always
+    container_name: mlflow_minio
+    command: server /data --console-address ":9001"
+    env_file:
+      - .env
+    ports:
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-admin1234}
+      MINIO_ADDRESS: ${MINIO_ADDRESS:-9000}
+      MINIO_CONSOLE_ADDRESS: ${MINIO_CONSOLE_ADDRESS:-9001}
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ml-network
+
+volumes:
+  pgdata:
+  minio_data:
+
+networks:
+  ml-network:
+    driver: bridge

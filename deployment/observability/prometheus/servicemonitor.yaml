@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: polyp-gateway
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: polyp-segmentation
+  namespaceSelector:
+    matchNames:
+      - kserve-inference
+  endpoints:
+    - port: http
+      interval: 15s
+      path: /metrics
+      scheme: http
+      tlsConfig:
+        insecureSkipVerify: true

@@ -1,0 +1,27 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: polyp-gateway-alerts
+  namespace: observability
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: polyp-gateway
+      rules:
+        - alert: TritonGatewayHighLatency
+          expr: histogram_quantile(0.95, sum(rate(inference_latency_seconds_bucket{job="polyp-segmentation"}[5m])) by (le)) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High latency detected on Triton gateway"
+            description: "95th percentile latency has been above 2 seconds for 5 minutes."
+        - alert: TritonGatewayDown
+          expr: min_over_time(service_health{check="ready"}[2m]) == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Gateway not ready"
+            description: "The readiness gauge has been zero for the last two minutes."

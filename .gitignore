@@ -1,0 +1,28 @@
+__pycache__/
+
+dataset
+dataset1
+
+*training/logs
+*mlruns
+*training/checkpoints
+*logs
+# .env
+model_pth
+.terraform
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+*istio-1.22.3
+# .*manifest
+/data
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.gradio

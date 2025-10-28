@@ -1,0 +1,25 @@
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://kube-prometheus-stack-prometheus.observability:9090
+        isDefault: true
+        jsonData:
+          timeInterval: 15s
+
+sidecar:
+  dashboards:
+    enabled: true
+    label: grafana_dashboard
+    folder: Polyp Segmentation
+
+persistence:
+  enabled: true
+  storageClassName: standard-rwo
+  size: 10Gi
+
+service:
+  type: ClusterIP
