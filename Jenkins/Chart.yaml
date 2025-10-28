@@ -1,0 +1,5 @@
+apiVersion: v2
+name: jenkins
+version: 0.1.0
+description: Jenkins controller tuned for Kubeflow-triggered deployments
+appVersion: "2.462.3"

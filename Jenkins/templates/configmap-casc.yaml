@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jenkins-casc
+  labels:
+    jenkins.io/configuration-as-code: "true"
+    role: master
+  annotations:
+    jenkins.io/configuration-as-code: jenkins
+  namespace: {{ .Release.Namespace }}
+  
+  
+data:
+  casc.yaml: |
+    jenkins:
+      systemMessage: |
+        Managed by Helm. Credentials and pipeline jobs are provisioned automatically.
+      securityRealm:
+        local:
+          allowsSignup: false
+          users:
+            - id: ${JENKINS_ADMIN_ID}
+              password: ${JENKINS_ADMIN_PASSWORD}
+      authorizationStrategy:
+        loggedInUsersCanDoAnything:
+          allowAnonymousRead: false
+      remotingSecurity:
+        enabled: true
+    unclassified:
+      location:
+        url: {{ .Values.controller.jenkinsUrl }}
+      kubernetes:
+        containerCapStr: "10"
+        maxRequestsPerHostStr: "32"
+        jenkinsUrl: http://polyp-jenkins.{{ .Release.Namespace }}:8080
+    jobs:
+      - script: |
+          pipelineJob('polyp-canary-promotion') {
+            definition {
+              cps {
+                script("""
+                pipeline {
+                  agent any
+                  stages {
+                    stage('Update Storage URI') {
+                      steps {
+                        sh '''
+                        kubectl -n kserve-inference patch inferenceservice polyp-segmentation \
+                          --type merge \
+                          -p '{"spec":{"predictor":{"canary":{"model":{"storageUri":"'"${MODEL_URI}"'"}}}}}'
+                        '''
+                      }
+                    }
+                    stage('Canary Traffic Split') {
+                      steps {
+                        sh '''
+                        kubectl -n kserve-inference patch inferenceservice polyp-segmentation \
+                          --type merge \
+                          -p '{"spec":{"predictor":{"canaryTrafficPercent":'"${CANARY_PERCENT:-25}"'}}}'
+                        '''
+                      }
+                    }
+                    stage('Health Gate') {
+                      steps {
+                        sh '''
+                        kubectl -n kserve-inference rollout status deploy/polyp-segmentation-transformer-default --timeout=120s
+                        kubectl -n kserve-inference wait --for=condition=Ready inferenceservice/polyp-segmentation --timeout=120s
+                        '''
+                      }
+                    }
+                  }
+                }
+                """)
+                sandbox()
+              }
+            }
+          }

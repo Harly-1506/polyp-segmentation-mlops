@@ -1,0 +1,60 @@
+# apiVersion: networking.istio.io/v1beta1
+# kind: VirtualService
+# metadata:
+#   name: minio-vs
+#   namespace: {{ .Values.istio.namespace }}
+# spec:
+#   gateways:
+#     - {{ .Values.istio.gateway }}
+#   hosts:
+#     - '*'
+#   http:
+#     - match:
+#         - uri:
+#             prefix: /minio/
+#       rewrite:
+#         uri: /
+#       route:
+#         - destination:
+#             host: minio-service.{{ .Values.namespace }}.svc.cluster.local
+#             port:
+#               number: 9001   # Web console
+
+#     - match:
+#         - uri:
+#             prefix: /minio-api/
+#       rewrite:
+#         uri: /
+#       route:
+#         - destination:
+#             host: minio-service.{{ .Values.namespace }}.svc.cluster.local
+#             port:
+#               number: 9000   # API endpoint
+# ---
+# apiVersion: networking.istio.io/v1alpha3
+# kind: EnvoyFilter
+# metadata:
+#   name: minio-auth
+#   namespace: {{ .Values.namespace }}
+# spec:
+#   workloadSelector:
+#     labels:
+#       app: minio-service
+#   configPatches:
+#     - applyTo: HTTP_FILTER
+#       match:
+#         context: GATEWAY
+#         listener:
+#           filterChain:
+#             filter:
+#               name: envoy.filters.network.http_connection_manager
+#       patch:
+#         operation: INSERT_BEFORE
+#         value:
+#           name: envoy.filters.http.lua
+#           typed_config:
+#             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+#             inlineCode: |
+#               function envoy_on_request(request_handle)
+#                 request_handle:headers():add("Authorization", "Basic YWRtaW46YWRtaW4xMjM0")
+#               end

@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ray-cluster.fullname" . }}-headless-svc
+  labels:
+    ray.io/headless-worker-svc: {{ include "ray-cluster.fullname" . }}
+spec:
+  clusterIP: None
+  selector:
+    ray.io/cluster: {{ include "ray-cluster.fullname" . }}
+  publishNotReadyAddresses: true
+  ports:
+    - name: node-manager-port
+      port: 6380
+      appProtocol: grpc
+    - name: object-manager-port
+      port: 6381
+      appProtocol: grpc
+    - name: runtime-env-agent-port
+      port: 6382
+      appProtocol: grpc
+    - name: dashboard-agent-grpc-port
+      port: 6383
+      appProtocol: grpc
+    - name: dashboard-agent-listen-port
+      port: 52365
+      appProtocol: http
+    - name: metrics-export-port
+      port: 8080
+      appProtocol: http
+    - name: max-worker-port
+      port: 10012
+      appProtocol: grpc
+
+
+
+#     Đây là headless service:
+
+# clusterIP: None → không có IP ảo, DNS sẽ resolve trực tiếp đến pod worker/head.
+
+# Ray worker dùng DNS này để tìm head node (ví dụ: xxx.raycluster-istio-headless-svc.<namespace>.svc.cluster.local).
+
+# Các port trùng khớp với AuthorizationPolicy để Ray cluster chạy được.

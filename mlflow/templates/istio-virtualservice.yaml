@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mlflow-vs
+  namespace: {{ .Values.istio.namespace }}
+spec:
+  gateways:
+    - {{ .Values.istio.gateway }}
+  hosts:
+    - '*'
+  http:
+    - match:
+        - uri:
+            prefix: /mlflow/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: mlflow-service.{{ .Values.namespace }}.svc.cluster.local
+            port:
+              number: 5001

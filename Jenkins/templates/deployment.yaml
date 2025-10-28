@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      serviceAccountName: jenkins
+      containers:
+        - name: jenkins
+          image: {{ .Values.controller.image }}:{{ .Values.controller.tag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+            - containerPort: 50000
+              name: agent
+          env:
+            - name: JAVA_OPTS
+              value: "-Djenkins.install.runSetupWizard=false"
+            - name: JENKINS_ADMIN_ID
+              value: {{ .Values.controller.adminUser | quote }}
+            - name: JENKINS_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default "jenkins-admin" .Values.controller.existingAdminSecret }}
+                  key: password
+            - name: CASC_JENKINS_CONFIG
+              value: /var/jenkins_home/casc_configs/casc.yaml
+          volumeMounts:
+            - name: jenkins-home
+              mountPath: /var/jenkins_home
+            - name: casc
+              mountPath: /var/jenkins_home/casc_configs
+              readOnly: true
+          resources:
+{{ toYaml .Values.controller.resources | indent 12 }}
+      volumes:
+        - name: jenkins-home
+          persistentVolumeClaim:
+            claimName: jenkins
+        - name: casc
+          configMap:
+            name: jenkins-casc

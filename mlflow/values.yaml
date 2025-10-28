@@ -1,0 +1,24 @@
+namespace: mlflow
+
+minio:
+  accessKey: admin
+  secretKey: admin1234
+  storage: 5Gi
+  hostPath: "/mnt/d/harly-study/WorkSpace/my_Github/MLops_pipeline/data/minio"
+
+postgres:
+  password: admin1234
+  storage: 2Gi
+  hostPath: "/mnt/d/harly-study/WorkSpace/my_Github/MLops_pipeline/data/postgres"
+
+mlflow:
+  image: harly1506/mlflow-custom:v1.2
+  s3_endpoint: "http://minio-service:9000"
+
+storageClass:
+  name: docker-sc
+  provisioner: docker.io/hostpath
+
+istio:
+  namespace: kubeflow
+  gateway: kubeflow-gateway

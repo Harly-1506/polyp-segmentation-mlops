@@ -1,0 +1,11 @@
+FROM ghcr.io/mlflow/mlflow:v3.2.0
+
+RUN apt-get -y update && \
+    apt-get -y install --no-install-recommends \
+        python3-dev build-essential pkg-config libpq-dev && \
+    pip install --upgrade pip && \
+    pip install psycopg2-binary boto3 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+CMD ["bash"]

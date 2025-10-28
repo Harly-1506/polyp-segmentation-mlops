@@ -1,0 +1,35 @@
+controller:
+  image: jenkins/jenkins
+  tag: lts-jdk17
+  adminUser: admin
+  adminPassword: ""
+  existingAdminSecret: ""
+  jenkinsUrl: http://polyp-jenkins.jenkins:8080
+  serviceType: ClusterIP
+  installPlugins:
+    - kubernetes:4210.vb_9e0a_578dc79
+    - workflow-aggregator:600.vb_57c2a_96c8f0
+    - git:5.6.0
+    - configuration-as-code:1877.v9b_22a_134214b
+    - blueocean:1.27.10
+  resources:
+    requests:
+      cpu: 250m
+      memory: 1Gi
+    limits:
+      cpu: "250m"
+      memory: 2Gi
+  serviceAccount:
+    create: true
+  ingress:
+    enabled: false
+  jenkinsUriPrefix: /
+
+persistence:
+  enabled: true
+  storageClass: standard
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+rbac:
+  create: true

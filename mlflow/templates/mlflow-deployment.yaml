@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: mlflow-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow  # this label is used to match the service selector
+    spec:
+      initContainers:
+      - name: create-buckets
+        image: minio/mc
+        command:
+          - /bin/sh
+          - -c
+          - |
+            until (mc alias set minio http://minio-service:9000 {{ .Values.minio.accessKey }} {{ .Values.minio.secretKey }}) do
+              echo '...waiting for minio...'
+              sleep 1
+            done
+
+            mc mb minio/mlflow || true
+            mc mb minio/dataset || true
+            mc mb minio/training || true
+
+            mc policy set public minio/mlflow
+            mc policy set public minio/dataset
+            mc policy set public minio/training
+            
+      containers:
+      - name: mlflow-tracking
+        image: {{ .Values.mlflow.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5001
+        env:
+          - name: MLFLOW_S3_ENDPOINT_URL
+            value: "{{ .Values.mlflow.s3_endpoint }}"
+          - name: MLFLOW_S3_IGNORE_TLS
+            value: "true"
+          - name: AWS_ACCESS_KEY_ID
+            value: {{ .Values.minio.accessKey | quote }}
+          - name: AWS_SECRET_ACCESS_KEY
+            value: {{ .Values.minio.secretKey | quote }}
+        command:
+          - mlflow
+          - server
+          - --host
+          - 0.0.0.0
+          - --port
+          - "5001"
+          - --backend-store-uri
+          - "postgresql+psycopg2://postgres:{{ .Values.postgres.password }}@mlflow-postgres:5432/postgres"
+          - --default-artifact-root
+          - "s3://mlflow"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "1"

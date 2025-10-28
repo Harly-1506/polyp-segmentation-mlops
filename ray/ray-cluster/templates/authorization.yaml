@@ -1,0 +1,36 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ray-workers-head
+spec:
+  action: ALLOW
+  selector:               
+    matchLabels:
+      ray.io/cluster: {{ include "ray-cluster.fullname" . }}
+  rules:
+  - from:
+    - source:
+        principals:
+        # kubeflow-user-example-com should be replaced with the namespace where the Ray cluster is being deployed
+        # TODO automatically use the current namespace
+        - "cluster.local/ns/development/sa/default-editor"
+  - to:
+    - operation:
+        ports:
+        - "6379"
+        - "6380"
+        - "6381"
+        - "6382"
+        - "6383"
+        - "52365"
+        - "8080"
+        - "10012"
+        - "10001"
+
+
+
+# Cho phép traffic từ ServiceAccount default-editor trong namespace kubeflow-user-example-com (cần sửa lại namespace đúng với cluster của bạn).
+
+# Cho phép đi vào các port mà Ray head expose (Redis, Object Manager, Dashboard Agent, Metrics…).
+
+# Nếu không có rule này, khi namespace bật Istio injection, thì Envoy sidecar sẽ block kết nối giữa worker ↔ head.  

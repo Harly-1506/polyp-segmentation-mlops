@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-service
+  namespace: {{ .Values.namespace }}
+spec:
+  type: ClusterIP
+  selector:
+    app: mlflow # this label is used to match the deployment selector
+  ports:
+  - name: tcp
+    protocol: TCP
+    port: 5001
+    targetPort: 5001
