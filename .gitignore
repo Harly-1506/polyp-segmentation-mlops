@@ -22,7 +22,7 @@ build/
 dist/
 wheels/
 *.egg-info
-
+*debug/
 # Virtual environments
 .venv
 .gradio
