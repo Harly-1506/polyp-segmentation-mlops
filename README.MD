@@ -14,5 +14,7 @@ The platform is orchestrated with **Kubeflow Pipelines** and deployed on **Googl
 ---
 
 ## 🧩 Architecture 
-![System Architecture](docs/architecture.png)
+<p align="center">
+  <img src="docs/architecture.png" alt="System Architecture" style="width:100%; max-width:1200px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2);" />
+</p>
 ---
