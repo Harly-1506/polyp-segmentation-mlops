@@ -1,0 +1,68 @@
+validate_paths: false
+
+model: UNet
+epoch: 1
+lr: 0.0001
+batchsize: 2
+trainsize: 352
+clip: 0.5
+scheduler_patience: 5
+decay_rate: 0.1
+augmentation: false
+
+train_path: s3://dataset/polyp_dataset/TrainDataset
+test_path: s3://dataset/polyp_dataset/TestDataset
+train_save: ./model_pth
+
+seed: 1234
+log_level: INFO
+is_final_training: true
+
+mlflow:
+  tracking_uri: http://localhost:5001
+  enable: True
+  experiment_name: PolypSegmentation
+  run_name: auto
+  tags:
+    project: PolypSegmentation
+    environment: development
+    author: Harly
+
+ray:
+  namespace: default
+  storage_path: ./training/logs/ray
+  scaling:
+    num_workers: 1
+    use_gpu: auto
+    resources_per_worker:
+      CPU: 1
+      GPU: 0
+  runtime_env:
+    working_dir: '.'
+    excludes: [
+          ".git/**",
+          ".venv/**",
+          "**/__pycache__/**",
+          "data/**",
+          "datasets/**",
+          "checkpoints/**",
+          "*.pt",
+          "*.pth",
+          "*.log",
+          "*.zip",
+          "*.tar",
+      ]
+    env_vars:
+      PYTHONUNBUFFERED: "1"
+
+tuning:
+  enable: True
+  metric: best_dice_score
+  mode: max
+  num_samples: 2
+  search_space:
+    batchsize: [1, 2, 4]
+    lr: [0.001, 0.0005, 0.0001]
+    trainsize: [352]
+    decay_rate: [0.1, 0.2]
+    clip: [0.5, 0.7]
