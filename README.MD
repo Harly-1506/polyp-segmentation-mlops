@@ -10,11 +10,39 @@ The platform is orchestrated with **Kubeflow Pipelines** and deployed on **Googl
 
 ---
 
-
----
-
 ## 🧩 Architecture 
-<p align="center">
-  <img src="docs/architecture.png" alt="System Architecture" style="width:100%; max-width:1200px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.2);" />
-</p>
+![System Architecture](docs/architecture.png)
 ---
+
+## 🧱 Stack Overview
+
+| Category | Tools / Frameworks |
+|-----------|-------------------|
+| **Orchestration** | Kubeflow Pipelines, Jenkins |
+| **Training** | PyTorch, Ray Train, Ray Tune |
+| **Tracking** | MLflow (PostgreSQL + MinIO backend) |
+| **Deployment** | KServe, Triton Inference Server |
+| **Storage** | MinIO, GCS |
+| **Monitoring** | Prometheus, Grafana |
+| **Infrastructure** | GKE, Docker, Terraform |
+| **UI** | Gradio  |
+
+
+## Table of content
+
+
+
+## Set up the environment
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/Harly-1506/polyp-segmentation-mlops.git
+   cd polyp-segmentation-mlops
+   ```
+2. Install `uv` and Synchronize dependencies:
+   ```bash
+   conda create -n polyp_mlops python==3.12.9                                                             
+   conda activate polyp_mlops
+   pip install uv
+   uv sync --frozen --group ml --group inference --group observability
+   ```
