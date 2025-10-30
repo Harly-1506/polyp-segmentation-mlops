@@ -248,16 +248,12 @@ docker build -t harly1506/polyp-mlops:kfpv2 .
 kind load docker-image harly1506/polyp-mlops:kfpv2 --name kubeflow
 ```
 
-This image includes all training scripts, pipeline definitions, and dependencies for running end-to-end experiments directly in **Kubeflow Pipelines**.
+Run this to generate pipeline yaml
+```python
+ uv run training/orchestration/kube_pipeline.py 
+ ``` 
 
----
-
-## ✅ Summary
-
-This repository demonstrates a **fully modular and production-ready MLOps ecosystem** that can be run locally or on GKE.
-Each component — data, training, orchestration, monitoring, and deployment — is **containerized, observable, and reproducible**, enabling true **continuous training (CT)** and **continuous deployment (CD)** for deep learning workflows.
-
-```
-```
-
+ Upload file ray_segmentation_pipeline_v9.yaml on kubeflow portal
+![Training Pipeline](docs/kubeflow-training.png)
+ 
 
