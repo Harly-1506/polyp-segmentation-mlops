@@ -32,43 +32,35 @@ The platform is orchestrated with **Kubeflow Pipelines** and deployed on **Googl
 ## 📁 Table of Contents
 
 * [💺 Polyp Segmentation System MLOps](#-polyp-segmentation-system-mlops)
-
   * [📚 Overview](#-overview)
   * [🧩 Architecture](#-architecture)
   * [🧱 Stack Overview](#-stack-overview)
   * [⚙️ Environment Setup](#%EF%B8%8F-environment-setup)
-
     * [1. Clone the Repository](#1-clone-the-repository)
     * [2. Create and Activate Environment with `uv`](#2-create-and-activate-environment-with-uv)
   * [🧪 Local Development](#-local-development)
-
     * [1. Install Docker](#1-install-docker)
     * [2. Run MLflow and MinIO Locally](#2-run-mlflow-and-minio-locally)
     * [3. Launch Local Ray Training](#3-launch-local-ray-training)
   * [☸️ Cluster Setup (Kind / GKE)](#%EF%B8%8F-cluster-setup-kind--gke)
-
     * [1. Install Helm & Kustomize](#1-install-helm--kustomize)
     * [2. Create Kind Cluster](#2-create-kind-cluster)
   * [📦 Kubeflow Deployment](#-kubeflow-deployment)
   * [🧾 MLflow Deployment](#-mlflow-deployment)
   * [⚡ KubeRay Installation](#-kuberay-installation)
-  * [🧽 Namespace & RayCluster Setup](#-namespace--raycluster-setup)
+  * [🧽 RayCluster Setup](#-raycluster-setup)
   * [🚀 Pipeline Integration](#-pipeline-integration)
   * [Development & Deployment Playbook (English)](#development--deployment-playbook-english)
-
     * [1) Local Validation](#1-local-validation)
-
       * [1.2 Export the model to ONNX](#12-export-the-model-to-onnx)
       * [1.3 Run Triton locally](#13-run-triton-locally)
       * [1.4 Build & run the FastAPI gateway](#14-build--run-the-fastapi-gateway)
     * [2) Build Once, Deploy Anywhere](#2-build-once-deploy-anywhere)
-
       * [2.1 Authenticate & configure gcloud](#21-authenticate--configure-gcloud)
       * [2.2 Create an Artifact Registry](#22-create-an-artifact-registry)
       * [2.3 Build & push the gateway image](#23-build--push-the-gateway-image)
       * [2.4 Upload model to GCS](#24-upload-model-to-gcs)
     * [3) Deploy to GKE with KServe](#3-deploy-to-gke-with-kserve)
-
       * [3.1 Provision a cluster](#31-provision-a-cluster)
       * [3.2 Install cert-manager, Istio, Knative Serving, and KServe](#32-install-cert-manager-istio-knative-serving-and-kserve)
       * [3.3 Create Service Accounts (Workload Identity: GSA ↔ KSA)](#33-create-service-accounts-workload-identity-gsa--ksa)
@@ -254,7 +246,7 @@ kuberay-operator-5b8cd69758-rkpvh   1/1     Running   0          6m
 
 ---
 
-## 🧭 Namespace & RayCluster Setup
+## 🧭 RayCluster Setup
 
 Create a new namespace and service account:
 
