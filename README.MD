@@ -310,6 +310,12 @@ MLflow tracking
 
 ![mlflow](docs/mlflow.png)
 
+Minio:
+```bash
+kubectl port-forward svc/minio-service -n mlflow 9000:9000 9001:9001
+```
+![minio](docs/minio.png)
+
 # Development
 End‑to‑end guide to deploy a **Triton Inference Stack** on **GKE with KServe**, with **Prometheus/Grafana** for observability and optional **GPU** + **Canary** + **CI/CD**.
 
