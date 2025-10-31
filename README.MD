@@ -176,7 +176,7 @@ kubectl create secret generic regcred \
 
 ## 📦 Kubeflow Deployment
 
-Download and deploy the official Kubeflow manifests:
+Download and deploy the official Kubeflow manifests
 
 ```bash
 RELEASE=v1.10.1
@@ -276,7 +276,12 @@ cd ray
 helm install raycluster ray-cluster -n development 
 helm upgrade raycluster ray-cluster -n development -f values.yaml
 ```
+Check pods
 
+```bash
+kubectl get po -A
+```
+![Kind Cluste Pods](docs/cluster_pods.png)
 ---
 
 ## 🚀 Pipeline Integration
@@ -292,10 +297,18 @@ Run this to generate pipeline yaml
 ```python
  uv run training/orchestration/kube_pipeline.py 
  ``` 
+ Upload file ray_segmentation_pipeline_v9.yaml on kubeflow portal via localhost:8080
 
- Upload file ray_segmentation_pipeline_v9.yaml on kubeflow portal
+```bash
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80 
+```
+
 ![Training Pipeline](docs/kubeflow-training.png)
- 
+
+---
+MLflow tracking
+
+![mlflow](docs/mlflow.png)
 
 # Development
 End‑to‑end guide to deploy a **Triton Inference Stack** on **GKE with KServe**, with **Prometheus/Grafana** for observability and optional **GPU** + **Canary** + **CI/CD**.
@@ -348,8 +361,6 @@ curl http://localhost:8000/v2/health/ready
 ```bash
 docker compose -f docker-compose-app.yaml up --build
 ```
-
-
 ---
 
 ## 2) Build and deployment
